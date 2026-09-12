@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /signup
+Disallow: /app
+Disallow: /onboarding
+
+Sitemap: https://thaali.app/sitemap.xml

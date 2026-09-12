@@ -1,0 +1,171 @@
+import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
+import { LogOut, Bell, Menu as MenuIcon } from 'lucide-react';
+import NewOrderToast from './NewOrderToast';
+import ThaaliMark from '../brand/ThaaliMark';
+import { NAV, PAGE_META, routesForRole, landingFor } from '../../config/nav';
+import { API_URL } from '../../api';
+
+const socket = io(API_URL);
+
+export default function Layout(){
+  const {user,logout}=useAuth();
+  const nav=useNavigate();
+  const loc=useLocation();
+  const [pendingOrders,setPendingOrders]=useState(0);
+  const [time,setTime]=useState(new Date());
+  const [sbOpen,setSbOpen]=useState(false);
+
+  useEffect(()=>{
+    const t=setInterval(()=>setTime(new Date()),60000);
+    return()=>clearInterval(t);
+  },[]);
+
+  useEffect(()=>{ setSbOpen(false); },[loc.pathname]);
+
+  useEffect(()=>{
+    if(!sbOpen) return;
+    const onKey=e=>{ if(e.key==='Escape') setSbOpen(false); };
+    document.addEventListener('keydown',onKey);
+    return()=>document.removeEventListener('keydown',onKey);
+  },[sbOpen]);
+
+  useEffect(()=>{
+    socket.emit('join_role',user.role);
+    socket.on('new_order',o=>{
+      setPendingOrders(p=>p+1);
+      toast.custom(()=><NewOrderToast order={o}/>,{duration:4000});
+    });
+    socket.on('waiter_called',d=>{
+      toast(`Table ${d.table_num} calling waiter!`,{icon:<Bell size={16} color="var(--crimson)"/>,duration:6000});
+    });
+    return()=>{socket.off('new_order');socket.off('waiter_called')};
+  },[user.role]);
+
+  const sections=NAV[user.role]||NAV.owner;
+  const meta=PAGE_META[loc.pathname]||{title:loc.pathname.slice(1),sub:''};
+
+  // Real route enforcement: NAV is the single source of truth for what a role can
+  // reach — if the current path isn't one of this role's own links, bounce them to
+  // their default landing instead of silently rendering a page they shouldn't see.
+  if(!routesForRole(user.role).includes(loc.pathname)){
+    return <Navigate to={landingFor(user.role)} replace/>;
+  }
+
+  return(
+    <div className="app-shell">
+      <div className={`sb-backdrop${sbOpen?' open':''}`} onClick={()=>setSbOpen(false)}/>
+      {/* ── SIDEBAR ── */}
+      {/* Only `opacity` is animated here (not `x`) — framer-motion would otherwise set an
+          inline `transform` that permanently overrides the CSS media-query transform used
+          to show/hide this as an off-canvas drawer on tablet/mobile. */}
+      <motion.aside className={`sidebar${sbOpen?' open':''}`}
+        initial={{opacity:0}} animate={{opacity:1}}
+        transition={{duration:.3}}>
+        
+        <div className="sb-logo">
+          <motion.div className="sb-mark"
+            whileHover={{scale:1.1,rotate:5}}
+            transition={{type:'spring',stiffness:400}}><ThaaliMark size={40}/></motion.div>
+          <div className="sb-wordmark">THAAA<span>LI</span></div>
+        </div>
+
+        <nav className="sb-nav">
+          {sections.map(sec=>(
+            <div key={sec.sect}>
+              <div className="sb-sect">{sec.sect}</div>
+              {sec.links.map((lk,i)=>{
+                const active=loc.pathname.startsWith(lk.to);
+                const isOrders=lk.to==='/app/orders';
+                return(
+                  <motion.button key={lk.to} type="button"
+                    className={`sb-link${active?' on':''}`}
+                    aria-current={active?'page':undefined}
+                    onClick={()=>{nav(lk.to);if(isOrders)setPendingOrders(0)}}
+                    initial={{opacity:0,x:-20}}
+                    animate={{opacity:1,x:0}}
+                    transition={{delay:i*0.04+0.1}}
+                    whileHover={{x:4}}
+                    whileTap={{scale:.97}}>
+                    <div className="sb-bar"/>
+                    <span className="sb-icon" aria-hidden="true"><lk.Icon size={16}/></span>
+                    {lk.label}
+                    {isOrders&&pendingOrders>0&&(
+                      <motion.span className="sb-badge"
+                        key={pendingOrders}
+                        initial={{scale:0}} animate={{scale:1}}
+                        transition={{type:'spring',stiffness:500}}>
+                        {pendingOrders}
+                      </motion.span>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        <div className="sb-foot">
+          <div className="sb-user">
+            <div className="sb-av">{user.avatar}</div>
+            <div>
+              <div className="sb-uname">{user.name}</div>
+              <div className="sb-urole">{user.role.replace('_',' ')}</div>
+            </div>
+          </div>
+          <motion.button type="button" className="sb-link" onClick={logout}
+            style={{marginTop:4,color:'rgba(255,255,255,.3)'}}
+            whileHover={{x:4,color:'rgba(255,255,255,.7)'}}>
+            <span className="sb-icon" aria-hidden="true"><LogOut size={16}/></span>Sign Out
+          </motion.button>
+        </div>
+      </motion.aside>
+
+      {/* ── MAIN ── */}
+      <div className="main-area">
+        <motion.header className="topbar"
+          initial={{y:-64}} animate={{y:0}}
+          transition={{type:'spring',stiffness:300,damping:30,delay:.1}}>
+          <div className="tb-l">
+            <button className="sb-hamburger" onClick={()=>setSbOpen(o=>!o)} aria-label="Toggle navigation menu">
+              <MenuIcon size={18}/>
+            </button>
+            <div>
+              <h1 className="page-h">{meta.title}</h1>
+              {meta.sub&&<div className="page-sub">{meta.sub}</div>}
+            </div>
+          </div>
+          <div className="tb-r">
+            <div className="live-pill">
+              <div className="live-dot"/>LIVE
+            </div>
+            <div style={{fontSize:12.5,color:'var(--muted)',fontWeight:500}}>
+              {time.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
+            </div>
+            <button className="tb-btn" aria-label="Notifications">
+              <Bell size={17}/><div className="tb-notif-dot"/>
+            </button>
+            <div className="tb-user-chip">
+              <div className="sb-av" style={{width:26,height:26,fontSize:10}}>{user.avatar}</div>
+              <span>{user.name.split(' ')[0]}</span>
+            </div>
+          </div>
+        </motion.header>
+
+        <AnimatePresence mode="wait">
+          <motion.main key={loc.pathname} className="page-wrap"
+            initial={{opacity:0,y:16,filter:'blur(4px)'}}
+            animate={{opacity:1,y:0,filter:'blur(0px)'}}
+            exit={{opacity:0,y:-10,filter:'blur(2px)'}}
+            transition={{duration:.25,ease:[.16,1,.3,1]}}>
+            <Outlet context={{socket}}/>
+          </motion.main>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
