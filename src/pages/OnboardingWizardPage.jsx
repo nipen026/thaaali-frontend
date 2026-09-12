@@ -5,6 +5,7 @@ import {Building2,Grid3X3,UtensilsCrossed,CheckCircle2,ArrowRight,ArrowLeft} fro
 import RestaurantInfoForm from '../components/setup/RestaurantInfoForm';
 import TableSetupManager from '../components/setup/TableSetupManager';
 import MenuSetupManager from '../components/setup/MenuSetupManager';
+import logoIcon from '../assets/brand/logo-icon.png';
 
 const STEPS=[
   {key:'info',label:'Restaurant Info',Icon:Building2},
@@ -25,7 +26,7 @@ export default function OnboardingWizardPage(){
     <div style={{minHeight:'100vh',background:'var(--surface)'}}>
       <div style={{maxWidth:760,margin:'0 auto',padding:'48px 24px'}}>
         <div style={{textAlign:'center',marginBottom:32}}>
-          <div className="sb-mark" style={{width:56,height:56,fontSize:24,margin:'0 auto 16px'}}>थ</div>
+          <img src={logoIcon} alt="THAAALI" style={{height:56,margin:'0 auto 16px',display:'block'}}/>
           <h1 style={{fontFamily:'var(--font-d)',fontSize:26,fontWeight:800,color:'var(--ink)'}}>Let's set up your business</h1>
           <p style={{color:'var(--muted)',fontSize:14,marginTop:6}}>Takes about five minutes — you can always finish this later from Setup.</p>
         </div>

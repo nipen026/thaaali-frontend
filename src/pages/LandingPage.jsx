@@ -9,7 +9,7 @@ import {
 import { useDocumentHead } from '../lib/useDocumentHead';
 import ProductSlider from '../components/landing/ProductSlider';
 import FAQAccordion from '../components/landing/FAQAccordion';
-import ThaaliMark from '../components/brand/ThaaliMark';
+import logoLockup from '../assets/brand/logo-lockup.png';
 import thaliHero from '../assets/landing/thali-hero.jpg';
 import thaliFoodTable from '../assets/landing/thali-food-table.jpg';
 import restaurantAmbient from '../assets/landing/restaurant-ambient.jpg';
@@ -128,10 +128,7 @@ export default function LandingPage() {
 
       <nav className="landing-nav">
         <div className="landing-brand">
-          <div className="sb-mark" style={{ width: 34, height: 34 }}><ThaaliMark size={34} /></div>
-          <div style={{ fontFamily: 'var(--font-d)', fontWeight: 800, fontSize: 17, color: 'var(--ink)' }}>
-            THAAA<span style={{ color: 'var(--saffron)' }}>LI</span>
-          </div>
+          <img src={logoLockup} alt="THAAALI" style={{ height: 32 }} />
         </div>
 
         <div className="landing-nav-links">
@@ -385,10 +382,7 @@ export default function LandingPage() {
         <div className="landing-footer-grid">
           <div className="landing-footer-brand">
             <div className="landing-brand">
-              <div className="sb-mark" style={{ width: 30, height: 30 }}><ThaaliMark size={30} /></div>
-              <div style={{ fontFamily: 'var(--font-d)', fontWeight: 800, fontSize: 15, color: 'var(--ink)' }}>
-                THAAA<span style={{ color: 'var(--saffron)' }}>LI</span>
-              </div>
+              <img src={logoLockup} alt="THAAALI" style={{ height: 28 }} />
             </div>
             <p>Your whole business, served on one Thaaali.</p>
           </div>

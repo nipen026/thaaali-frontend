@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { UtensilsCrossed, Building2, ShieldCheck, Bot } from 'lucide-react';
-import ThaaliMark from '../brand/ThaaliMark';
+import logoFullDark from '../../assets/brand/logo-full-dark.png';
 import thaliHero from '../../assets/landing/thali-hero.jpg';
 
 const FEATURES = [
@@ -31,26 +31,16 @@ export default function AuthBrandPanel() {
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }} />
 
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-        <motion.div
-          initial={{ scale: 0, rotate: -30 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
-          style={{
-            width: 90, height: 90, margin: '0 auto 24px',
-            boxShadow: '0 12px 48px rgba(255,107,0,.4)', borderRadius: '50%',
-          }}>
-          <ThaaliMark size={90} />
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.5 }}
-          style={{ fontFamily: 'var(--font-d)', fontSize: 60, fontWeight: 800, color: 'white', letterSpacing: '-2px', lineHeight: 1 }}>
-          THAAA<span style={{ color: 'var(--saffron)' }}>LI</span>
-        </motion.h1>
+        <motion.img
+          src={logoFullDark} alt="THAAALI — Your whole business, served on one Thaaali."
+          initial={{ opacity: 0, y: 20, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.1 }}
+          style={{ width: 420, maxWidth: '100%' }} />
 
         <motion.p
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-          style={{ color: 'rgba(255,255,255,.42)', fontSize: 15, marginTop: 12, lineHeight: 1.7 }}>
+          style={{ color: 'rgba(255,255,255,.42)', fontSize: 15, marginTop: 16, lineHeight: 1.7 }}>
           Restaurant &amp; Hotel Management System<br />
           <em style={{ fontSize: 13, color: 'rgba(255,255,255,.28)' }}>India का अपना Hospitality OS</em>
         </motion.p>

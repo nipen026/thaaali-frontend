@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { LogOut, Bell, Menu as MenuIcon } from 'lucide-react';
 import NewOrderToast from './NewOrderToast';
-import ThaaliMark from '../brand/ThaaliMark';
+import logoLockupDark from '../../assets/brand/logo-lockup-dark.png';
 import { NAV, PAGE_META, routesForRole, landingFor } from '../../config/nav';
 import { API_URL } from '../../api';
 
@@ -68,10 +68,9 @@ export default function Layout(){
         transition={{duration:.3}}>
         
         <div className="sb-logo">
-          <motion.div className="sb-mark"
-            whileHover={{scale:1.1,rotate:5}}
-            transition={{type:'spring',stiffness:400}}><ThaaliMark size={40}/></motion.div>
-          <div className="sb-wordmark">THAAA<span>LI</span></div>
+          <motion.img src={logoLockupDark} alt="THAAALI" className="sb-logo-img"
+            whileHover={{scale:1.04}}
+            transition={{type:'spring',stiffness:400}}/>
         </div>
 
         <nav className="sb-nav">

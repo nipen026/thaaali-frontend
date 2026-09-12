@@ -21,20 +21,16 @@ import RestaurantSetupPage from './pages/setup/RestaurantSetupPage';
 import TableSetupPage from './pages/setup/TableSetupPage';
 import MenuSetupPage from './pages/setup/MenuSetupPage';
 import { landingFor } from './config/nav';
-import ThaaliMark from './components/brand/ThaaliMark';
+import logoLockupDark from './assets/brand/logo-lockup-dark.png';
 
 function Splash(){
   return(
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--ink)'}}>
       <div style={{textAlign:'center'}}>
-        <div style={{margin:'0 auto 18px',width:56,height:56,animation:'badge-pop .5s var(--ease-spring) both'}}>
-          <ThaaliMark size={56}/>
-        </div>
-        <div style={{
-          fontSize:60,fontFamily:'var(--font-d)',fontWeight:800,color:'white',
-          letterSpacing:'-2px',animation:'float-in .6s var(--ease-out) forwards'
-        }}>THAAA<span style={{color:'var(--saffron)'}}>LI</span></div>
-        <div style={{color:'rgba(255,255,255,.35)',marginTop:12,fontSize:13,letterSpacing:'.06em'}}>LOADING YOUR KITCHEN…</div>
+        <img src={logoLockupDark} alt="THAAALI" style={{
+          width:280,animation:'float-in .6s var(--ease-out) forwards'
+        }}/>
+        <div style={{color:'rgba(255,255,255,.35)',marginTop:16,fontSize:13,letterSpacing:'.06em'}}>LOADING YOUR KITCHEN…</div>
         <div style={{marginTop:20,display:'flex',gap:6,justifyContent:'center'}}>
           {[0,1,2].map(i=>(
             <div key={i} style={{

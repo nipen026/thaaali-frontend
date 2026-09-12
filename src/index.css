@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sora:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 :root {
   --saffron:       #FF6B00;
@@ -38,7 +38,10 @@
   --r-xs: 6px;  --r-sm: 10px; --r-md: 14px;
   --r-lg: 20px; --r-xl: 28px;
 
-  --font-d: 'Sora', sans-serif;
+  /* One professional typeface app-wide — --font-d/--font-b kept as separate
+     tokens (rather than collapsed into one) so existing weight/size rules
+     that reference either name keep working unchanged. */
+  --font-d: 'Inter', sans-serif;
   --font-b: 'Inter', sans-serif;
   --sb-w: 248px;
   --tb-h: 64px;
@@ -122,19 +125,10 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 /* ── SIDEBAR INTERNALS ─────────────── */
 .sb-logo{
   padding:20px 18px 16px;
-  display:flex;align-items:center;gap:10px;
+  display:flex;align-items:center;
   border-bottom:1px solid rgba(255,255,255,.06);
 }
-.sb-mark{
-  width:40px;height:40px;border-radius:50%;
-  background:linear-gradient(135deg,var(--saffron),var(--saffron-dark));
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--font-d);font-weight:800;color:white;font-size:18px;
-  box-shadow:0 4px 16px var(--saffron-glow);
-  flex-shrink:0;
-}
-.sb-wordmark{font-family:var(--font-d);font-weight:800;font-size:20px;color:white;letter-spacing:-.5px}
-.sb-wordmark span{color:var(--saffron)}
+.sb-logo-img{height:34px;width:auto;cursor:default}
 .sb-nav{padding:14px 10px;flex:1;display:flex;flex-direction:column;gap:1px}
 .sb-sect{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.25);
   text-transform:uppercase;letter-spacing:.13em;padding:10px 10px 5px}
@@ -269,21 +263,16 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   border:1.5px solid transparent;white-space:nowrap;
   position:relative;overflow:hidden;
 }
-.btn::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,0));
-  pointer-events:none;
-}
-.btn:active{transform:scale(.97)}
+.btn:active{transform:scale(.98)}
 .btn-sm{padding:6px 13px;font-size:12.5px}
 .btn-lg{padding:13px 28px;font-size:15px}
 .btn-xl{padding:16px 36px;font-size:17px;font-weight:700}
 .btn-pr{
-  background:linear-gradient(135deg,var(--saffron),var(--saffron-dark));
-  color:white;border-color:var(--saffron-dark);
-  box-shadow:0 4px 16px var(--saffron-glow);
+  background:var(--saffron);
+  color:white;border-color:var(--saffron);
+  box-shadow:0 1px 2px rgba(15,15,26,.08);
 }
-.btn-pr:hover{transform:translateY(-2px);box-shadow:0 8px 28px var(--saffron-glow)}
+.btn-pr:hover{background:var(--saffron-dark);border-color:var(--saffron-dark);box-shadow:0 2px 6px rgba(15,15,26,.12)}
 .btn-sc{background:var(--surface);color:var(--slate);border-color:var(--border)}
 .btn-sc:hover{border-color:var(--saffron);color:var(--saffron);background:var(--saffron-50)}
 .btn-da{background:var(--crimson-50);color:var(--crimson);border-color:#f5c6c2}
@@ -366,10 +355,10 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   width:28px;height:28px;border-radius:50%;
   background:var(--saffron);color:white;font-size:18px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
-  border:none;transition:all .2s var(--ease-spring);
+  border:none;transition:all .18s var(--ease-out);
   opacity:.7;transform:translateX(4px);
 }
-.mc-add:hover{background:var(--saffron-dark);transform:scale(1.15) translateX(0)!important}
+.mc-add:hover{background:var(--saffron-dark);transform:scale(1.06) translateX(0)!important}
 .mc-bestseller{
   position:absolute;top:8px;right:8px;
   background:linear-gradient(135deg,var(--saffron),#FF9340);
@@ -733,7 +722,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 }
 .landing-cta-band::before{
   content:'';position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(135deg,rgba(255,107,0,.94),rgba(212,87,0,.96));
+  background:linear-gradient(135deg,rgba(0,0,0,.94),rgba(255,107,0,.55));
 }
 .landing-cta-bg{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover}
 .landing-cta-band h2{font-family:var(--font-d);font-size:clamp(22px,3vw,32px);font-weight:800;margin-bottom:10px}
