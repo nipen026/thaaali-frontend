@@ -4,6 +4,7 @@ import {menuAPI,aiAPI} from '../../api';
 import {notifySuccess,notifyError} from '../../lib/toast';
 import {useApiData} from '../../lib/useApiData';
 import Skeleton from '../ui/Skeleton';
+import {useLanguage} from '../../context/LanguageContext';
 
 const NEW_CATEGORY='__new__';
 const EMPTY_ITEM={category:'',newCategoryName:'',name:'',price:'',type:'veg',spice:'mild'};
@@ -18,6 +19,7 @@ function fileToBase64(file){
 }
 
 export default function MenuSetupManager(){
+  const {t}=useLanguage();
   const {data:menu,setData:setMenu,loading}=useApiData(()=>menuAPI.getAll());
   const [mode,setMode]=useState('manual');
   const [form,setForm]=useState(EMPTY_ITEM);
@@ -50,8 +52,8 @@ export default function MenuSetupManager(){
 
   const addManualItem=async e=>{
     e.preventDefault();
-    if(!form.name||!form.price) return notifyError('Name and price are required');
-    if(form.category===NEW_CATEGORY&&!form.newCategoryName) return notifyError('Enter a category name');
+    if(!form.name||!form.price) return notifyError(t('setup.menuNameAndPriceRequired','Name and price are required'));
+    if(form.category===NEW_CATEGORY&&!form.newCategoryName) return notifyError(t('setup.menuEnterCategoryName','Enter a category name'));
     setBusy(true);
     try{
       const cache=new Map();
@@ -61,9 +63,9 @@ export default function MenuSetupManager(){
       const r=await menuAPI.create({category:categoryId,name:form.name,price:Number(form.price),type:form.type,spice:form.spice});
       setMenu(prev=>({...prev,items:[...prev.items,r.data]}));
       setForm(EMPTY_ITEM);
-      notifySuccess(`${r.data.name} added to menu`);
+      notifySuccess(t('setup.menuItemAddedToast','{name} added to menu').replace('{name}',r.data.name));
     }catch{
-      notifyError('Could not add item');
+      notifyError(t('setup.menuAddItemError','Could not add item'));
     }finally{setBusy(false);}
   };
 
@@ -74,7 +76,7 @@ export default function MenuSetupManager(){
     const file=e.target.files?.[0];
     if(!file) return;
     if(file.size>MAX_FILE_BYTES){
-      notifyError('That file is too large — please use a photo under 6MB');
+      notifyError(t('setup.menuFileTooLarge','That file is too large — please use a photo under 6MB'));
       e.target.value='';
       return;
     }
@@ -91,7 +93,7 @@ export default function MenuSetupManager(){
       const r=await aiAPI.scanMenu(imageBase64);
       setExtracted(r.data.items.map((it,i)=>({...it,localId:i,include:true})));
     }catch(err){
-      notifyError(err?.response?.data?.error||'Scan failed — please try again');
+      notifyError(err?.response?.data?.error||t('setup.menuScanFailed','Scan failed — please try again'));
     }finally{setScanning(false);}
   };
 
@@ -102,7 +104,7 @@ export default function MenuSetupManager(){
 
   const saveExtracted=async()=>{
     const toSave=extracted.filter(it=>it.include);
-    if(!toSave.length) return notifyError('No items selected');
+    if(!toSave.length) return notifyError(t('setup.menuNoItemsSelected','No items selected'));
     setSaving(true);
     try{
       const cache=new Map();
@@ -113,57 +115,60 @@ export default function MenuSetupManager(){
         created.push(r.data);
       }
       setMenu(prev=>({...prev,items:[...prev.items,...created]}));
-      notifySuccess(`${created.length} item${created.length===1?'':'s'} added to menu`);
+      const addedLabel=created.length===1
+        ? t('setup.menuItemAddedToastOne','{n} item added to menu')
+        : t('setup.menuItemAddedToastMany','{n} items added to menu');
+      notifySuccess(addedLabel.replace('{n}',created.length));
       setExtracted(null);setImageBase64(null);setImagePreview(null);setFileName(null);
     }catch{
-      notifyError('Could not save some items');
+      notifyError(t('setup.menuSaveSomeItemsError','Could not save some items'));
     }finally{setSaving(false);}
   };
 
   return(
     <div>
       <div className="filter-bar">
-        <button className={`chip${mode==='manual'?' on':''}`} onClick={()=>setMode('manual')}><PenLine size={13}/> Add Manually</button>
-        <button className={`chip${mode==='scan'?' on':''}`} onClick={()=>setMode('scan')}><ScanLine size={13}/> Scan a Menu</button>
+        <button className={`chip${mode==='manual'?' on':''}`} onClick={()=>setMode('manual')}><PenLine size={13}/> {t('setup.menuAddManually','Add Manually')}</button>
+        <button className={`chip${mode==='scan'?' on':''}`} onClick={()=>setMode('scan')}><ScanLine size={13}/> {t('setup.menuScanAMenu','Scan a Menu')}</button>
       </div>
 
-      <div style={{fontSize:13,color:'var(--muted)',marginBottom:16}}>{menu.items.length} items on your menu so far</div>
+      <div style={{fontSize:13,color:'var(--muted)',marginBottom:16}}>{t('setup.menuItemsCountSoFar','{n} items on your menu so far').replace('{n}',menu.items.length)}</div>
 
       {mode==='manual'?(
         <form onSubmit={addManualItem} className="stack gap-3" style={{maxWidth:480}}>
           <div className="fgrp">
-            <label className="flbl" htmlFor="mi-category">Category</label>
+            <label className="flbl" htmlFor="mi-category">{t('setup.menuCategory','Category')}</label>
             <select id="mi-category" className="finput" value={form.category} onChange={set('category')}>
-              <option value="">Choose a category…</option>
+              <option value="">{t('setup.menuChooseCategory','Choose a category…')}</option>
               {categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
-              <option value={NEW_CATEGORY}>+ New category…</option>
+              <option value={NEW_CATEGORY}>{t('setup.menuNewCategoryOption','+ New category…')}</option>
             </select>
           </div>
           {form.category===NEW_CATEGORY&&(
             <div className="fgrp">
-              <label className="flbl" htmlFor="mi-newcat">New category name</label>
+              <label className="flbl" htmlFor="mi-newcat">{t('setup.menuNewCategoryName','New category name')}</label>
               <input id="mi-newcat" className="finput" value={form.newCategoryName} onChange={set('newCategoryName')}/>
             </div>
           )}
           <div className="fgrp">
-            <label className="flbl" htmlFor="mi-name">Item name</label>
+            <label className="flbl" htmlFor="mi-name">{t('setup.menuItemName','Item name')}</label>
             <input id="mi-name" className="finput" value={form.name} onChange={set('name')} required/>
           </div>
           <div className="grid-2 gap-3">
             <div className="fgrp">
-              <label className="flbl" htmlFor="mi-price">Price (₹)</label>
+              <label className="flbl" htmlFor="mi-price">{t('setup.menuPrice','Price (₹)')}</label>
               <input id="mi-price" type="number" min="0" className="finput" value={form.price} onChange={set('price')} required/>
             </div>
             <div className="fgrp">
-              <label className="flbl" htmlFor="mi-type">Type</label>
+              <label className="flbl" htmlFor="mi-type">{t('setup.menuType','Type')}</label>
               <select id="mi-type" className="finput" value={form.type} onChange={set('type')}>
-                <option value="veg">Veg</option>
-                <option value="non_veg">Non-Veg</option>
+                <option value="veg">{t('setup.menuTypeVeg','Veg')}</option>
+                <option value="non_veg">{t('setup.menuTypeNonVeg','Non-Veg')}</option>
               </select>
             </div>
           </div>
           <button type="submit" className="btn btn-pr" disabled={busy} style={{alignSelf:'flex-start'}}>
-            <Plus size={15}/> {busy?'Adding…':'Add Item'}
+            <Plus size={15}/> {busy?t('setup.menuAdding','Adding…'):t('setup.menuAddItem','Add Item')}
           </button>
         </form>
       ):(
@@ -171,26 +176,26 @@ export default function MenuSetupManager(){
           {!extracted&&(
             <div className="card" style={{padding:24,maxWidth:480}}>
               <div className="fgrp">
-                <label className="flbl" htmlFor="menu-photo">Upload a photo or PDF of your menu</label>
+                <label className="flbl" htmlFor="menu-photo">{t('setup.menuUploadPhotoLabel','Upload a photo or PDF of your menu')}</label>
                 <input id="menu-photo" type="file" accept="image/*,application/pdf" onChange={onFileChange} className="finput"/>
               </div>
-              {imagePreview&&<img src={imagePreview} alt="Menu preview" style={{maxWidth:'100%',borderRadius:'var(--r-sm)',marginBottom:14}}/>}
+              {imagePreview&&<img src={imagePreview} alt={t('setup.menuPreviewAlt','Menu preview')} style={{maxWidth:'100%',borderRadius:'var(--r-sm)',marginBottom:14}}/>}
               {imageBase64&&!imagePreview&&(
                 <div className="flex gap-2 badge bg-gray" style={{marginBottom:14,padding:'8px 12px'}}>
                   <FileText size={14}/> {fileName}
                 </div>
               )}
               <button className="btn btn-pr" disabled={!imageBase64||scanning} onClick={runScan}>
-                {scanning?<>Scanning…</>:<><Sparkles size={15}/> Scan Menu</>}
+                {scanning?<>{t('setup.menuScanning','Scanning…')}</>:<><Sparkles size={15}/> {t('setup.menuScanMenu','Scan Menu')}</>}
               </button>
-              {!imageBase64&&<div style={{fontSize:12,color:'var(--muted)',marginTop:10}} className="flex gap-1"><UploadCloud size={13}/> Choose a photo or PDF to get started</div>}
+              {!imageBase64&&<div style={{fontSize:12,color:'var(--muted)',marginTop:10}} className="flex gap-1"><UploadCloud size={13}/> {t('setup.menuChoosePhotoToStart','Choose a photo or PDF to get started')}</div>}
             </div>
           )}
 
           {extracted&&(
             <div>
               <div style={{fontSize:12.5,color:'var(--muted)',marginBottom:14}}>
-                Found {extracted.length} items — review and edit before saving. This is a demo extraction; always double-check prices.
+                {t('setup.menuFoundItemsReview','Found {n} items — review and edit before saving. This is a demo extraction; always double-check prices.').replace('{n}',extracted.length)}
               </div>
               <div className="stack gap-2" style={{marginBottom:16}}>
                 {extracted.map(it=>(
@@ -199,16 +204,16 @@ export default function MenuSetupManager(){
                     <input className="finput" style={{width:90}} type="number" value={it.price} onChange={updateExtracted(it.localId,'price')}/>
                     <input className="finput" style={{flex:1}} value={it.category_name} onChange={updateExtracted(it.localId,'category_name')}/>
                     <span className="badge bg-gray">{Math.round(it.confidence*100)}%</span>
-                    <button className="tb-btn" style={{width:30,height:30}} aria-label={`Remove ${it.name}`} onClick={()=>removeExtracted(it.localId)}>
+                    <button className="tb-btn" style={{width:30,height:30}} aria-label={t('setup.menuRemoveExtractedAriaLabel','Remove {name}').replace('{name}',it.name)} onClick={()=>removeExtracted(it.localId)}>
                       <Trash2 size={13}/>
                     </button>
                   </div>
                 ))}
               </div>
               <div className="flex gap-3">
-                <button className="btn btn-sc" onClick={()=>{setExtracted(null);setImageBase64(null);setImagePreview(null);setFileName(null);}}>Start Over</button>
+                <button className="btn btn-sc" onClick={()=>{setExtracted(null);setImageBase64(null);setImagePreview(null);setFileName(null);}}>{t('setup.menuStartOver','Start Over')}</button>
                 <button className="btn btn-pr" disabled={saving} onClick={saveExtracted}>
-                  {saving?'Saving…':`Save ${extracted.length} Items`}
+                  {saving?t('setup.menuSavingItems','Saving…'):t('setup.menuSaveItemsButton','Save {n} Items').replace('{n}',extracted.length)}
                 </button>
               </div>
             </div>

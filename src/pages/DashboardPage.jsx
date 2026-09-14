@@ -5,6 +5,7 @@ import {analyticsAPI} from '../api';
 import {useAuth} from '../context/AuthContext';
 import {IndianRupee,ClipboardList,Grid3X3,Hourglass,TrendingUp,Package,CircleDot,AlertTriangle} from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
+import {useLanguage} from '../context/LanguageContext';
 
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const PIE_COLORS=['#FF6B00','#0F7A45','#1565C0','#F59E0B'];
@@ -59,6 +60,7 @@ const ChartTip=({active,payload,label})=>{
 
 export default function DashboardPage(){
   const {user}=useAuth();
+  const {t}=useLanguage();
   const [stats,setStats]=useState(null);
   const [weekly,setWeekly]=useState([]);
   const [hourly,setHourly]=useState([]);
@@ -77,7 +79,7 @@ export default function DashboardPage(){
   },[]);
 
   const hr=new Date().getHours();
-  const greet=hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  const greet=hr<12?t('dashboard.greetMorning','Good morning'):hr<17?t('dashboard.greetAfternoon','Good afternoon'):t('dashboard.greetEvening','Good evening');
 
   if(loading) return <div className="kpi-grid"><Skeleton variant="kpi" count={6}/></div>;
 
@@ -96,8 +98,8 @@ export default function DashboardPage(){
             </div>
           </div>
           <div className="flex gap-2" style={{flexWrap:'wrap'}}>
-            <div className="badge bg-jade flex gap-1"><CircleDot size={11}/> All systems live</div>
-            <div className="badge bg-saffron">{stats?.active_orders??0} active orders</div>
+            <div className="badge bg-jade flex gap-1"><CircleDot size={11}/> {t('dashboard.allSystemsLive','All systems live')}</div>
+            <div className="badge bg-saffron">{t('dashboard.activeOrdersBadge','{n} active orders').replace('{n}',stats?.active_orders??0)}</div>
           </div>
         </div>
       </motion.div>
@@ -105,12 +107,12 @@ export default function DashboardPage(){
       {/* KPIs */}
       {stats&&(
         <div className="kpi-grid">
-          <KPI delay={.05} label="Today's Revenue" value={`₹${stats.revenue}`} delta="↑ 18% vs yesterday" Icon={IndianRupee} color="var(--saffron)" glow="rgba(255,107,0,.07)"/>
-          <KPI delay={.10} label="Orders Today" value={stats.orders} delta="↑ 12 from yesterday" Icon={ClipboardList} color="var(--jade)" glow="rgba(15,122,69,.07)"/>
-          <KPI delay={.15} label="Tables Occupied" value={`${stats.tables_occupied}/${stats.tables_total}`} delta={`${Math.round(stats.tables_occupied/stats.tables_total*100)}% occupancy`} Icon={Grid3X3} color="var(--sky)" glow="rgba(21,101,192,.06)"/>
-          <KPI delay={.20} label="Active Orders" value={stats.active_orders} delta={stats.active_orders>5?'Rush':'Normal pace'} Icon={Hourglass} color="var(--amber)" glow="rgba(245,158,11,.07)"/>
-          <KPI delay={.25} label="Avg Order Value" value={`₹${stats.avg_order}`} delta="↑ ₹18 this week" Icon={TrendingUp} color="var(--purple)" glow="rgba(124,58,237,.06)"/>
-          <KPI delay={.30} label="Low Stock Alerts" value={stats.low_stock_alerts} delta={stats.low_stock_alerts>0?'Action needed':'All stocked'} Icon={stats.low_stock_alerts>0?AlertTriangle:Package} color={stats.low_stock_alerts>0?'var(--crimson)':'var(--jade)'} glow="rgba(192,57,43,.06)"/>
+          <KPI delay={.05} label={t('dashboard.todaysRevenue',"Today's Revenue")} value={`₹${stats.revenue}`} delta={t('dashboard.deltaVsYesterday','↑ 18% vs yesterday')} Icon={IndianRupee} color="var(--saffron)" glow="rgba(255,107,0,.07)"/>
+          <KPI delay={.10} label={t('dashboard.ordersToday','Orders Today')} value={stats.orders} delta={t('dashboard.deltaFromYesterday','↑ 12 from yesterday')} Icon={ClipboardList} color="var(--jade)" glow="rgba(15,122,69,.07)"/>
+          <KPI delay={.15} label={t('dashboard.tablesOccupied','Tables Occupied')} value={`${stats.tables_occupied}/${stats.tables_total}`} delta={t('dashboard.occupancyPct','{n}% occupancy').replace('{n}',Math.round(stats.tables_occupied/stats.tables_total*100))} Icon={Grid3X3} color="var(--sky)" glow="rgba(21,101,192,.06)"/>
+          <KPI delay={.20} label={t('dashboard.activeOrders','Active Orders')} value={stats.active_orders} delta={stats.active_orders>5?t('dashboard.rush','Rush'):t('dashboard.normalPace','Normal pace')} Icon={Hourglass} color="var(--amber)" glow="rgba(245,158,11,.07)"/>
+          <KPI delay={.25} label={t('dashboard.avgOrderValue','Avg Order Value')} value={`₹${stats.avg_order}`} delta={t('dashboard.deltaThisWeek','↑ ₹18 this week')} Icon={TrendingUp} color="var(--purple)" glow="rgba(124,58,237,.06)"/>
+          <KPI delay={.30} label={t('dashboard.lowStockAlerts','Low Stock Alerts')} value={stats.low_stock_alerts} delta={stats.low_stock_alerts>0?t('dashboard.actionNeeded','Action needed'):t('dashboard.allStocked','All stocked')} Icon={stats.low_stock_alerts>0?AlertTriangle:Package} color={stats.low_stock_alerts>0?'var(--crimson)':'var(--jade)'} glow="rgba(192,57,43,.06)"/>
         </div>
       )}
 
@@ -118,8 +120,8 @@ export default function DashboardPage(){
       <div className="grid-2" style={{gridTemplateColumns:'3fr 2fr',gap:14,marginBottom:14}}>
         <motion.div className="card" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.35}}>
           <div className="card-hd">
-            <div className="card-hd-title">Weekly Revenue</div>
-            <div className="badge bg-saffron">This Week</div>
+            <div className="card-hd-title">{t('dashboard.weeklyRevenue','Weekly Revenue')}</div>
+            <div className="badge bg-saffron">{t('dashboard.thisWeek','This Week')}</div>
           </div>
           <div className="card-bd" style={{paddingTop:8}}>
             <ResponsiveContainer width="100%" height={190}>
@@ -143,7 +145,7 @@ export default function DashboardPage(){
         </motion.div>
 
         <motion.div className="card" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.4}}>
-          <div className="card-hd"><div className="card-hd-title">Channel Split</div></div>
+          <div className="card-hd"><div className="card-hd-title">{t('dashboard.channelSplit','Channel Split')}</div></div>
           <div className="card-bd stack">
             <ResponsiveContainer width="100%" height={130}>
               <PieChart>
@@ -170,7 +172,7 @@ export default function DashboardPage(){
       {/* Charts row 2 */}
       <div className="grid-2" style={{gridTemplateColumns:'2fr 1fr',gap:14}}>
         <motion.div className="card" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.45}}>
-          <div className="card-hd"><div className="card-hd-title">Hourly Volume Today</div></div>
+          <div className="card-hd"><div className="card-hd-title">{t('dashboard.hourlyVolumeToday','Hourly Volume Today')}</div></div>
           <div className="card-bd" style={{paddingTop:8}}>
             <ResponsiveContainer width="100%" height={150}>
               <BarChart data={hourly} barSize={12} margin={{top:4,right:4,left:0,bottom:0}}>
@@ -184,7 +186,7 @@ export default function DashboardPage(){
         </motion.div>
 
         <motion.div className="card" initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:.5}}>
-          <div className="card-hd"><div className="card-hd-title">Top Dishes</div></div>
+          <div className="card-hd"><div className="card-hd-title">{t('dashboard.topDishes','Top Dishes')}</div></div>
           <div style={{padding:'8px 0'}}>
             {topItems.map((item,i)=>(
               <motion.div key={item.id}
@@ -194,7 +196,7 @@ export default function DashboardPage(){
                 <span style={{fontSize:20}} aria-hidden="true">{item.image}</span>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:600}}>{item.name}</div>
-                  <div style={{fontSize:11,color:'var(--muted)'}}>{item.orders_count} orders</div>
+                  <div style={{fontSize:11,color:'var(--muted)'}}>{t('dashboard.ordersCount','{n} orders').replace('{n}',item.orders_count)}</div>
                 </div>
                 <div style={{fontFamily:'var(--font-d)',fontWeight:800,color:'var(--saffron)',fontSize:14}}>
                   ₹{item.price}

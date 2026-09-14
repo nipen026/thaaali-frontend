@@ -5,13 +5,14 @@ import {IndianRupee,Receipt,TrendingUp,Smartphone,CreditCard,Banknote,Shuffle} f
 import {analyticsAPI} from '../api';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import {useLanguage} from '../context/LanguageContext';
 
 const METHOD_META={
-  upi:{label:'UPI',Icon:Smartphone,color:'var(--saffron)'},
-  card:{label:'Card',Icon:CreditCard,color:'var(--sky)'},
-  cash:{label:'Cash',Icon:Banknote,color:'var(--jade)'},
-  mixed:{label:'Split',Icon:Shuffle,color:'var(--purple)'},
-  unknown:{label:'Other',Icon:Shuffle,color:'var(--muted)'},
+  upi:{labelKey:'ledger.methodUpi',label:'UPI',Icon:Smartphone,color:'var(--saffron)'},
+  card:{labelKey:'ledger.methodCard',label:'Card',Icon:CreditCard,color:'var(--sky)'},
+  cash:{labelKey:'ledger.methodCash',label:'Cash',Icon:Banknote,color:'var(--jade)'},
+  mixed:{labelKey:'ledger.methodSplit',label:'Split',Icon:Shuffle,color:'var(--purple)'},
+  unknown:{labelKey:'ledger.methodOther',label:'Other',Icon:Shuffle,color:'var(--muted)'},
 };
 
 function toISODate(d){return d.toISOString().slice(0,10);}
@@ -32,6 +33,7 @@ const ChartTip=({active,payload,label})=>{
 };
 
 export default function LedgerPage(){
+  const {t}=useLanguage();
   const [preset,setPreset]=useState('month');
   const [customFrom,setCustomFrom]=useState(toISODate(new Date()));
   const [customTo,setCustomTo]=useState(toISODate(new Date()));
@@ -49,13 +51,13 @@ export default function LedgerPage(){
   return(
     <div>
       <div className="filter-bar" style={{marginBottom:20}}>
-        <button className={`chip${preset==='month'?' on':''}`} onClick={()=>setPreset('month')}>This Month</button>
-        <button className={`chip${preset==='year'?' on':''}`} onClick={()=>setPreset('year')}>This Year</button>
-        <button className={`chip${preset==='custom'?' on':''}`} onClick={()=>setPreset('custom')}>Custom Range</button>
+        <button className={`chip${preset==='month'?' on':''}`} onClick={()=>setPreset('month')}>{t('ledger.thisMonth','This Month')}</button>
+        <button className={`chip${preset==='year'?' on':''}`} onClick={()=>setPreset('year')}>{t('ledger.thisYear','This Year')}</button>
+        <button className={`chip${preset==='custom'?' on':''}`} onClick={()=>setPreset('custom')}>{t('ledger.customRange','Custom Range')}</button>
         {preset==='custom'&&(
           <div className="flex gap-2" style={{marginLeft:8}}>
             <input type="date" className="finput" style={{width:150}} value={customFrom} onChange={e=>setCustomFrom(e.target.value)}/>
-            <span style={{color:'var(--muted)',alignSelf:'center'}}>to</span>
+            <span style={{color:'var(--muted)',alignSelf:'center'}}>{t('ledger.to','to')}</span>
             <input type="date" className="finput" style={{width:150}} value={customTo} onChange={e=>setCustomTo(e.target.value)}/>
           </div>
         )}
@@ -68,19 +70,19 @@ export default function LedgerPage(){
           <div className="kpi-grid" style={{marginBottom:20}}>
             <motion.div className="kpi" style={{'--glow-c':'rgba(255,107,0,.07)'}} initial={{opacity:0,y:16}} animate={{opacity:1,y:0}}>
               <div className="kpi-stripe" style={{background:'var(--saffron)'}}/>
-              <div className="kpi-lbl">Total Revenue</div>
+              <div className="kpi-lbl">{t('ledger.totalRevenue','Total Revenue')}</div>
               <div className="kpi-val">₹{data.total_revenue.toLocaleString('en-IN')}</div>
               <IndianRupee size={32} className="kpi-ico" style={{color:'var(--saffron)'}}/>
             </motion.div>
             <motion.div className="kpi" style={{'--glow-c':'rgba(15,122,69,.07)'}} initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.05}}>
               <div className="kpi-stripe" style={{background:'var(--jade)'}}/>
-              <div className="kpi-lbl">Bills Collected</div>
+              <div className="kpi-lbl">{t('ledger.billsCollected','Bills Collected')}</div>
               <div className="kpi-val">{data.bills_count}</div>
               <Receipt size={32} className="kpi-ico" style={{color:'var(--jade)'}}/>
             </motion.div>
             <motion.div className="kpi" style={{'--glow-c':'rgba(21,101,192,.06)'}} initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:.1}}>
               <div className="kpi-stripe" style={{background:'var(--sky)'}}/>
-              <div className="kpi-lbl">Avg Bill Value</div>
+              <div className="kpi-lbl">{t('ledger.avgBillValue','Avg Bill Value')}</div>
               <div className="kpi-val">₹{Math.round(data.avg_bill_value).toLocaleString('en-IN')}</div>
               <TrendingUp size={32} className="kpi-ico" style={{color:'var(--sky)'}}/>
             </motion.div>
@@ -88,10 +90,10 @@ export default function LedgerPage(){
 
           <div className="grid-2" style={{gridTemplateColumns:'2fr 1fr',gap:14,marginBottom:14}}>
             <div className="card">
-              <div className="card-hd"><div className="card-hd-title">Revenue Trend</div></div>
+              <div className="card-hd"><div className="card-hd-title">{t('ledger.revenueTrend','Revenue Trend')}</div></div>
               <div className="card-bd" style={{paddingTop:8}}>
                 {data.daily_breakdown.length===0?(
-                  <EmptyState title="No paid bills in this range" subtitle="Try a wider date range."/>
+                  <EmptyState title={t('ledger.noPaidBills','No paid bills in this range')} subtitle={t('ledger.tryWiderRange','Try a wider date range.')}/>
                 ):(
                   <ResponsiveContainer width="100%" height={200}>
                     <AreaChart data={data.daily_breakdown} margin={{top:4,right:4,left:0,bottom:0}}>
@@ -112,10 +114,10 @@ export default function LedgerPage(){
             </div>
 
             <div className="card">
-              <div className="card-hd"><div className="card-hd-title">Payment Methods</div></div>
+              <div className="card-hd"><div className="card-hd-title">{t('ledger.paymentMethods','Payment Methods')}</div></div>
               <div className="card-bd stack gap-3">
                 {Object.keys(data.by_payment_method).length===0?(
-                  <div style={{fontSize:13,color:'var(--muted)'}}>No payments yet.</div>
+                  <div style={{fontSize:13,color:'var(--muted)'}}>{t('ledger.noPaymentsYet','No payments yet.')}</div>
                 ):Object.entries(data.by_payment_method).sort(([,a],[,b])=>b-a).map(([method,amount])=>{
                   const meta=METHOD_META[method]||METHOD_META.unknown;
                   const pct=data.total_revenue?Math.round(amount/data.total_revenue*100):0;
@@ -124,7 +126,7 @@ export default function LedgerPage(){
                       <meta.Icon size={18} style={{color:meta.color,flexShrink:0}}/>
                       <div style={{flex:1}}>
                         <div className="flex-between" style={{fontSize:13,fontWeight:600,marginBottom:3}}>
-                          <span>{meta.label}</span><span>₹{amount.toLocaleString('en-IN')}</span>
+                          <span>{t(meta.labelKey,meta.label)}</span><span>₹{amount.toLocaleString('en-IN')}</span>
                         </div>
                         <div className="stock-bar" style={{width:'100%'}}>
                           <div className="stock-fill" style={{width:`${pct}%`,background:meta.color}}/>
@@ -139,9 +141,9 @@ export default function LedgerPage(){
           </div>
 
           <div className="card">
-            <div className="card-hd"><div className="card-hd-title">Top Selling Dishes</div></div>
+            <div className="card-hd"><div className="card-hd-title">{t('ledger.topSellingDishes','Top Selling Dishes')}</div></div>
             {data.top_items.length===0?(
-              <EmptyState title="No items sold in this range"/>
+              <EmptyState title={t('ledger.noItemsSold','No items sold in this range')}/>
             ):(
               <div style={{padding:'8px 0'}}>
                 {data.top_items.map((item,i)=>(
@@ -150,7 +152,7 @@ export default function LedgerPage(){
                       <span style={{fontFamily:'var(--font-d)',fontWeight:800,color:'var(--muted)',minWidth:20}}>{i+1}</span>
                       <div>
                         <div style={{fontSize:13.5,fontWeight:600}}>{item.name}</div>
-                        <div style={{fontSize:11,color:'var(--muted)'}}>{item.qty} sold</div>
+                        <div style={{fontSize:11,color:'var(--muted)'}}>{t('ledger.qtySold','{n} sold').replace('{n}',item.qty)}</div>
                       </div>
                     </div>
                     <div style={{fontFamily:'var(--font-d)',fontWeight:800,color:'var(--saffron)'}}>₹{item.revenue.toLocaleString('en-IN')}</div>

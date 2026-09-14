@@ -1,19 +1,22 @@
 import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { LogOut, Bell, Menu as MenuIcon } from 'lucide-react';
 import NewOrderToast from './NewOrderToast';
+import UserMenu from './UserMenu';
 import logoLockupDark from '../../assets/brand/logo-lockup-dark.png';
-import { NAV, PAGE_META, routesForRole, landingFor } from '../../config/nav';
+import { NAV, PAGE_META, UNIVERSAL_ROUTES, routesForRole, landingFor } from '../../config/nav';
 import { API_URL } from '../../api';
 
 const socket = io(API_URL);
 
 export default function Layout(){
   const {user,logout}=useAuth();
+  const {t}=useLanguage();
   const nav=useNavigate();
   const loc=useLocation();
   const [pendingOrders,setPendingOrders]=useState(0);
@@ -21,8 +24,8 @@ export default function Layout(){
   const [sbOpen,setSbOpen]=useState(false);
 
   useEffect(()=>{
-    const t=setInterval(()=>setTime(new Date()),60000);
-    return()=>clearInterval(t);
+    const timerId=setInterval(()=>setTime(new Date()),60000);
+    return()=>clearInterval(timerId);
   },[]);
 
   useEffect(()=>{ setSbOpen(false); },[loc.pathname]);
@@ -52,7 +55,7 @@ export default function Layout(){
   // Real route enforcement: NAV is the single source of truth for what a role can
   // reach — if the current path isn't one of this role's own links, bounce them to
   // their default landing instead of silently rendering a page they shouldn't see.
-  if(!routesForRole(user.role).includes(loc.pathname)){
+  if(!routesForRole(user.role).includes(loc.pathname) && !UNIVERSAL_ROUTES.includes(loc.pathname)){
     return <Navigate to={landingFor(user.role)} replace/>;
   }
 
@@ -76,7 +79,7 @@ export default function Layout(){
         <nav className="sb-nav">
           {sections.map(sec=>(
             <div key={sec.sect}>
-              <div className="sb-sect">{sec.sect}</div>
+              <div className="sb-sect">{t(sec.sectKey,sec.sect)}</div>
               {sec.links.map((lk,i)=>{
                 const active=loc.pathname.startsWith(lk.to);
                 const isOrders=lk.to==='/app/orders';
@@ -92,7 +95,7 @@ export default function Layout(){
                     whileTap={{scale:.97}}>
                     <div className="sb-bar"/>
                     <span className="sb-icon" aria-hidden="true"><lk.Icon size={16}/></span>
-                    {lk.label}
+                    {t(lk.labelKey,lk.label)}
                     {isOrders&&pendingOrders>0&&(
                       <motion.span className="sb-badge"
                         key={pendingOrders}
@@ -119,7 +122,7 @@ export default function Layout(){
           <motion.button type="button" className="sb-link" onClick={logout}
             style={{marginTop:4,color:'rgba(255,255,255,.3)'}}
             whileHover={{x:4,color:'rgba(255,255,255,.7)'}}>
-            <span className="sb-icon" aria-hidden="true"><LogOut size={16}/></span>Sign Out
+            <span className="sb-icon" aria-hidden="true"><LogOut size={16}/></span>{t('common.signOut','Sign Out')}
           </motion.button>
         </div>
       </motion.aside>
@@ -130,28 +133,25 @@ export default function Layout(){
           initial={{y:-64}} animate={{y:0}}
           transition={{type:'spring',stiffness:300,damping:30,delay:.1}}>
           <div className="tb-l">
-            <button className="sb-hamburger" onClick={()=>setSbOpen(o=>!o)} aria-label="Toggle navigation menu">
+            <button className="sb-hamburger" onClick={()=>setSbOpen(o=>!o)} aria-label={t('chrome.toggleNav','Toggle navigation menu')}>
               <MenuIcon size={18}/>
             </button>
             <div>
-              <h1 className="page-h">{meta.title}</h1>
-              {meta.sub&&<div className="page-sub">{meta.sub}</div>}
+              <h1 className="page-h">{t(meta.titleKey,meta.title)}</h1>
+              {meta.sub&&<div className="page-sub">{t(meta.subKey,meta.sub)}</div>}
             </div>
           </div>
           <div className="tb-r">
             <div className="live-pill">
-              <div className="live-dot"/>LIVE
+              <div className="live-dot"/>{t('chrome.live','LIVE')}
             </div>
             <div style={{fontSize:12.5,color:'var(--muted)',fontWeight:500}}>
               {time.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
             </div>
-            <button className="tb-btn" aria-label="Notifications">
+            <button className="tb-btn" aria-label={t('chrome.notifications','Notifications')}>
               <Bell size={17}/><div className="tb-notif-dot"/>
             </button>
-            <div className="tb-user-chip">
-              <div className="sb-av" style={{width:26,height:26,fontSize:10}}>{user.avatar}</div>
-              <span>{user.name.split(' ')[0]}</span>
-            </div>
+            <UserMenu/>
           </div>
         </motion.header>
 

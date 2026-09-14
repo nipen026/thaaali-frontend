@@ -6,8 +6,10 @@ import {notifySuccess,notifyError} from '../lib/toast';
 import {useApiData} from '../lib/useApiData';
 import Skeleton from '../components/ui/Skeleton';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import {useLanguage} from '../context/LanguageContext';
 
 export default function InventoryPage(){
+  const {t}=useLanguage();
   const {data:items,setData:setItems,loading}=useApiData(()=>inventoryAPI.getAll());
   const [confirmOpen,setConfirmOpen]=useState(false);
   const [reordering,setReordering]=useState(false);
@@ -21,9 +23,9 @@ export default function InventoryPage(){
     try{
       const r=await inventoryAPI.reorder(alerts.map(a=>a.id));
       setItems(prev=>prev.map(i=>r.data.find(u=>u.id===i.id)||i));
-      notifySuccess(`Reordered ${r.data.length} item${r.data.length===1?'':'s'}`);
+      notifySuccess((r.data.length===1?t('inventory.reorderedOne','Reordered {n} item'):t('inventory.reorderedMany','Reordered {n} items')).replace('{n}',r.data.length));
     }catch{
-      notifyError('Could not place reorder');
+      notifyError(t('inventory.reorderFailed','Could not place reorder'));
     }finally{setReordering(false);}
   };
 
@@ -36,19 +38,19 @@ export default function InventoryPage(){
           <AlertTriangle size={22} style={{color:'var(--crimson)',flexShrink:0}}/>
           <div style={{flex:1}}>
             <div style={{fontSize:13.5,fontWeight:700,color:'var(--crimson)'}}>
-              {alerts.length} item{alerts.length>1?'s':''} need reordering
+              {(alerts.length===1?t('inventory.reorderAlertOne','{n} item need reordering'):t('inventory.reorderAlertMany','{n} items need reordering')).replace('{n}',alerts.length)}
             </div>
             <div style={{fontSize:12,color:'var(--crimson)',opacity:.8,marginTop:2}}>{alerts.map(a=>a.name).join(' · ')}</div>
           </div>
           <button className="btn btn-da btn-sm" onClick={()=>setConfirmOpen(true)}>
-            <ShoppingCart size={14}/> Order Now
+            <ShoppingCart size={14}/> {t('inventory.orderNow','Order Now')}
           </button>
         </motion.div>
       )}
       <div className="card">
         <table className="inv-table">
           <thead>
-            <tr><th>Item</th><th>Supplier</th><th>Stock Level</th><th>Unit</th><th>Status</th><th>₹/Unit</th></tr>
+            <tr><th>{t('inventory.colItem','Item')}</th><th>{t('inventory.colSupplier','Supplier')}</th><th>{t('inventory.colStockLevel','Stock Level')}</th><th>{t('inventory.colUnit','Unit')}</th><th>{t('common.status','Status')}</th><th>{t('inventory.colPricePerUnit','₹/Unit')}</th></tr>
           </thead>
           <tbody>
             {items.map((item,i)=>{
@@ -70,7 +72,7 @@ export default function InventoryPage(){
                     </div>
                   </td>
                   <td style={{color:'var(--muted)',fontSize:13}}>{item.unit}</td>
-                  <td><span className={`badge ${low?'bg-crimson':'bg-jade'}`}>{low?'Low Stock':'In Stock'}</span></td>
+                  <td><span className={`badge ${low?'bg-crimson':'bg-jade'}`}>{low?t('inventory.lowStock','Low Stock'):t('inventory.inStock','In Stock')}</span></td>
                   <td style={{fontWeight:600}}>₹{item.price_per_unit}</td>
                 </motion.tr>
               );
@@ -84,9 +86,9 @@ export default function InventoryPage(){
         onClose={()=>setConfirmOpen(false)}
         onConfirm={confirmReorder}
         danger={false}
-        title="Reorder low-stock items?"
-        message={`This will place a restock order for: ${alerts.map(a=>a.name).join(', ')}. Stock will be topped up to a healthy level once received.`}
-        confirmLabel={reordering?'Ordering…':'Order Now'}
+        title={t('inventory.reorderTitle','Reorder low-stock items?')}
+        message={t('inventory.reorderMessage','This will place a restock order for: {names}. Stock will be topped up to a healthy level once received.').replace('{names}',alerts.map(a=>a.name).join(', '))}
+        confirmLabel={reordering?t('inventory.ordering','Ordering…'):t('inventory.orderNow','Order Now')}
       />
     </div>
   );

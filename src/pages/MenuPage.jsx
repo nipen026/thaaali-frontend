@@ -6,25 +6,27 @@ import {notifySuccess} from '../lib/toast';
 import {useApiData} from '../lib/useApiData';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
-
-const FILTERS=[
-  {key:'all',label:'All Items'},
-  {key:'veg',label:'Veg'},
-  {key:'non_veg',label:'Non-Veg'},
-  {key:'jain',label:'Jain'},
-  {key:'c1',label:'Starters',cat:true},
-  {key:'c2',label:'Main Course',cat:true},
-  {key:'c3',label:'Breads',cat:true},
-  {key:'c4',label:'Rice & Biryani',cat:true},
-  {key:'c5',label:'Dal',cat:true},
-  {key:'c6',label:'Desserts',cat:true},
-  {key:'c7',label:'Beverages',cat:true},
-];
+import {useLanguage} from '../context/LanguageContext';
 
 export default function MenuPage(){
+  const {t}=useLanguage();
   const {data:items,setData:setItems,loading}=useApiData(async()=>{const r=await menuAPI.getAll();return{data:r.data.items};});
   const [filter,setFilter]=useState('all');
   const [search,setSearch]=useState('');
+
+  const FILTERS=[
+    {key:'all',label:t('menu.filterAll','All Items')},
+    {key:'veg',label:t('menu.filterVeg','Veg')},
+    {key:'non_veg',label:t('menu.filterNonVeg','Non-Veg')},
+    {key:'jain',label:t('menu.filterJain','Jain')},
+    {key:'c1',label:t('menu.filterStarters','Starters'),cat:true},
+    {key:'c2',label:t('menu.filterMainCourse','Main Course'),cat:true},
+    {key:'c3',label:t('menu.filterBreads','Breads'),cat:true},
+    {key:'c4',label:t('menu.filterRiceBiryani','Rice & Biryani'),cat:true},
+    {key:'c5',label:t('menu.filterDal','Dal'),cat:true},
+    {key:'c6',label:t('menu.filterDesserts','Desserts'),cat:true},
+    {key:'c7',label:t('menu.filterBeverages','Beverages'),cat:true},
+  ];
 
   if(loading) return <div className="menu-grid"><Skeleton variant="card" count={8}/></div>;
 
@@ -40,18 +42,18 @@ export default function MenuPage(){
   const toggle=async item=>{
     await menuAPI.update(item.id,{available:!item.available});
     setItems(p=>p.map(i=>i.id===item.id?{...i,available:!i.available}:i));
-    notifySuccess(`${item.name} ${item.available?'marked sold out':'back on menu'}`);
+    notifySuccess(`${item.name} ${item.available?t('menu.markedSoldOut','marked sold out'):t('menu.backOnMenu','back on menu')}`);
   };
 
   return(
     <div>
       <div className="flex-between" style={{marginBottom:16,flexWrap:'wrap',gap:12}}>
         <div style={{fontSize:13,color:'var(--muted)'}}>
-          {items.length} items · {items.filter(i=>i.available).length} available · {items.filter(i=>!i.available).length} sold out
+          {t('menu.itemsCount','{n} items').replace('{n}',items.length)} · {t('menu.availableCount','{n} available').replace('{n}',items.filter(i=>i.available).length)} · {t('menu.soldOutCount','{n} sold out').replace('{n}',items.filter(i=>!i.available).length)}
         </div>
         <div className="search-wrap">
           <Search size={15} className="search-ico"/>
-          <input className="finput" style={{width:220,paddingLeft:36}} placeholder="Search menu…" value={search} onChange={e=>setSearch(e.target.value)}/>
+          <input className="finput" style={{width:220,paddingLeft:36}} placeholder={t('menu.searchPlaceholder','Search menu…')} value={search} onChange={e=>setSearch(e.target.value)}/>
         </div>
       </div>
 
@@ -71,7 +73,7 @@ export default function MenuPage(){
               exit={{opacity:0,scale:.88}}
               transition={{delay:i*.03,duration:.3,ease:[.16,1,.3,1]}}
               layout>
-              {item.orders_count>500&&<div className="mc-bestseller flex gap-1"><Star size={11}/> Bestseller</div>}
+              {item.orders_count>500&&<div className="mc-bestseller flex gap-1"><Star size={11}/> {t('menu.bestseller','Bestseller')}</div>}
               <div className="mc-thumb" aria-hidden="true">{item.image}</div>
               <div className="mc-body">
                 <div className="flex gap-2" style={{marginBottom:4}}>
@@ -89,7 +91,7 @@ export default function MenuPage(){
                         color:item.available?'var(--crimson)':'var(--jade)',fontWeight:600,transition:'all .18s'}}
                       whileHover={{scale:1.05}} whileTap={{scale:.96}}
                       onClick={()=>toggle(item)}>
-                      {item.available?'Sold Out':'Available'}
+                      {item.available?t('menu.soldOut','Sold Out'):t('menu.available','Available')}
                     </motion.button>
                   </div>
                 </div>
@@ -104,7 +106,7 @@ export default function MenuPage(){
         </AnimatePresence>
         {filtered.length===0&&(
           <div style={{gridColumn:'1/-1'}}>
-            <EmptyState icon={<Search size={48} strokeWidth={1.5}/>} title={`No items match "${search||filter}"`}/>
+            <EmptyState icon={<Search size={48} strokeWidth={1.5}/>} title={t('menu.noMatch','No items match "{query}"').replace('{query}',search||filter)}/>
           </div>
         )}
       </div>

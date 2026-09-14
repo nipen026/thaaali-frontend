@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 import { UtensilsCrossed } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
+// Zomato and WhatsApp are brand/product names — left untranslated on purpose.
 const CHANNEL_LABEL = { zomato: 'Zomato', whatsapp: 'WhatsApp' };
 
 export default function NewOrderToast({ order }) {
-  const label = CHANNEL_LABEL[order.channel] || (order.table_id ? `Table ${order.table_number}` : 'Online');
+  const { t } = useLanguage();
+  const label = CHANNEL_LABEL[order.channel] || (order.table_id ? t('orders.tableLabel', 'Table {n}').replace('{n}', order.table_number) : t('orders.online', 'Online'));
   return (
     <motion.div
       className="card flex gap-3"
@@ -13,7 +16,7 @@ export default function NewOrderToast({ order }) {
     >
       <UtensilsCrossed size={28} style={{ color: 'var(--saffron)', flexShrink: 0 }} />
       <div>
-        <div style={{ fontWeight: 700, fontSize: 13 }}>New Order!</div>
+        <div style={{ fontWeight: 700, fontSize: 13 }}>{t('orders.newOrder', 'New Order!')}</div>
         <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{label} · ₹{order.total}</div>
       </div>
       <div style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: 'var(--jade)', animation: 'pulse-jade 1.5s infinite' }} />

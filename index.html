@@ -20,6 +20,14 @@
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="THAAALI — Restaurant & Hotel Management System" />
     <meta name="twitter:description" content="Tables, orders, kitchen, billing, inventory, and hotel operations — one platform, built for how your team actually works." />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('thaali_theme');
+          if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

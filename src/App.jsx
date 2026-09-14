@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import Layout from './components/layout/Layout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -20,6 +22,8 @@ import OnboardingWizardPage from './pages/OnboardingWizardPage';
 import RestaurantSetupPage from './pages/setup/RestaurantSetupPage';
 import TableSetupPage from './pages/setup/TableSetupPage';
 import MenuSetupPage from './pages/setup/MenuSetupPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 import { landingFor } from './config/nav';
 import logoLockupDark from './assets/brand/logo-lockup-dark.png';
 
@@ -63,8 +67,10 @@ function AppIndexRedirect(){
 
 export default function App(){
   return(
-    <AuthProvider>
-      <BrowserRouter>
+    <ThemeProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -94,10 +100,14 @@ export default function App(){
             <Route path="setup/restaurant" element={<RestaurantSetupPage/>}/>
             <Route path="setup/tables"     element={<TableSetupPage/>}/>
             <Route path="setup/menu"       element={<MenuSetupPage/>}/>
+            <Route path="profile"   element={<ProfilePage/>}/>
+            <Route path="settings"  element={<SettingsPage/>}/>
           </Route>
           <Route path="*" element={<Navigate to="/" replace/>}/>
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </LanguageProvider>
+    </ThemeProvider>
   );
 }

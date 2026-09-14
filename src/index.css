@@ -19,6 +19,10 @@
   --ink:           #0F0F1A;
   --ink-80:        #1E1E30;
   --ink-60:        #2D2D45;
+  /* Fixed near-black used for always-dark brand surfaces (sidebar, hero bands, login
+     panel) — kept separate from --ink so those surfaces don't invert when --ink itself
+     is redefined as the (light) text color under the dark theme below. */
+  --ink-fixed:     #0F0F1A;
   --slate:         #4A4A6A;
   --muted:         #8A8AA8;
   --border:        #E4E4EF;
@@ -26,6 +30,7 @@
   --surface:       #F7F7FC;
   --surface-2:     #EFEFF8;
   --white:         #FFFFFF;
+  --topbar-bg:     rgba(255,255,255,.92);
 
   --sh-xs: 0 1px 3px rgba(15,15,26,.07);
   --sh-sm: 0 2px 8px  rgba(15,15,26,.09);
@@ -54,6 +59,35 @@
   --sp-6:24px; --sp-7:32px; --sp-8:40px; --sp-9:56px;
 }
 
+/* ── DARK THEME ─────────────────────────
+   Swaps the semantic tokens only — components that use --ink/--surface/--white/
+   --border/--muted keep working unchanged. --ink-fixed, used by always-dark brand
+   surfaces (sidebar, hero bands, login panel), is intentionally NOT redefined here. */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --slate:         #C7C7DE;
+    --muted:         #8E8EAE;
+    --border:        #2A2A3D;
+    --border-subtle: #232333;
+    --surface:       #121219;
+    --surface-2:     #1A1A26;
+    --white:         #191922;
+    --ink:           #F1F1F8;
+    --topbar-bg:     rgba(18,18,25,.86);
+  }
+}
+:root[data-theme="dark"]{
+  --slate:         #C7C7DE;
+  --muted:         #8E8EAE;
+  --border:        #2A2A3D;
+  --border-subtle: #232333;
+  --surface:       #121219;
+  --surface-2:     #1A1A26;
+  --white:         #191922;
+  --ink:           #F1F1F8;
+  --topbar-bg:     rgba(18,18,25,.86);
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
 body{font-family:var(--font-b);background:var(--surface);color:var(--ink);line-height:1.6;overflow-x:hidden}
@@ -71,14 +105,14 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 /* ── LAYOUT ─────────────────────────── */
 .app-shell{display:flex;min-height:100vh}
 .sidebar{
-  width:var(--sb-w);background:var(--ink);position:fixed;
+  width:var(--sb-w);background:var(--ink-fixed);position:fixed;
   top:0;left:0;bottom:0;z-index:100;
   display:flex;flex-direction:column;overflow-y:auto;
   border-right:1px solid rgba(255,255,255,.04);
 }
 .main-area{margin-left:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{
-  height:var(--tb-h);background:rgba(255,255,255,.92);
+  height:var(--tb-h);background:var(--topbar-bg);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
@@ -218,10 +252,68 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 }
 .tb-user-chip{
   display:flex;align-items:center;gap:8px;
-  padding:5px 12px;border-radius:100px;
+  padding:5px 10px 5px 12px;border-radius:100px;
   background:var(--surface);border:1px solid var(--border);
-  font-size:13px;font-weight:500;
+  font-size:13px;font-weight:500;color:var(--ink);
+  transition:border-color .2s,color .2s;
 }
+.tb-user-chip:hover{border-color:var(--saffron);color:var(--saffron)}
+
+/* ── USER MENU ─────────────────────── */
+.user-menu{position:relative}
+.user-menu-chev{color:var(--muted);transition:transform .2s}
+.user-menu-chev.open{transform:rotate(180deg)}
+.user-menu-panel{
+  position:absolute;top:calc(100% + 10px);right:0;z-index:200;
+  width:240px;background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r-md);box-shadow:var(--sh-lg);padding:8px;
+  transform-origin:top right;
+}
+.user-menu-hd{display:flex;align-items:center;gap:10px;padding:8px 6px 10px}
+.user-menu-hd-txt{min-width:0}
+.user-menu-name{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-menu-email{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-menu-sep{height:1px;background:var(--border-subtle);margin:6px 2px}
+.user-menu-item{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:var(--r-xs);
+  font-size:13px;font-weight:500;color:var(--slate);
+  transition:background .15s,color .15s;
+}
+.user-menu-item:hover{background:var(--surface);color:var(--ink)}
+.user-menu-item.danger{color:var(--crimson)}
+.user-menu-item.danger:hover{background:var(--crimson-50)}
+.user-menu-theme-lbl{
+  padding:4px 10px 6px;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;
+}
+.user-menu-theme-row{display:flex;gap:4px;padding:0 6px 4px}
+.user-menu-theme-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 4px;border-radius:var(--r-xs);border:1px solid var(--border);
+  font-size:10.5px;font-weight:600;color:var(--muted);
+  transition:all .15s;
+}
+.user-menu-theme-btn:hover{border-color:var(--saffron);color:var(--saffron)}
+.user-menu-theme-btn.on{background:var(--saffron-50);border-color:var(--saffron);color:var(--saffron-dark)}
+
+/* ── SETTINGS PAGE ─────────────────── */
+.settings-theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.settings-theme-card{
+  display:flex;align-items:center;gap:12px;text-align:left;
+  padding:14px;border-radius:var(--r-md);border:1.5px solid var(--border);
+  background:var(--surface);transition:all .18s;
+}
+.settings-theme-card:hover{border-color:var(--saffron)}
+.settings-theme-card.on{border-color:var(--saffron);background:var(--saffron-50)}
+.settings-theme-icon{
+  width:36px;height:36px;border-radius:var(--r-sm);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--white);border:1px solid var(--border);color:var(--slate);
+}
+.settings-theme-card.on .settings-theme-icon{color:var(--saffron-dark);border-color:var(--saffron)}
+.settings-theme-lbl{font-size:13.5px;font-weight:700;color:var(--ink)}
+.settings-theme-desc{font-size:11.5px;color:var(--muted);margin-top:1px}
 
 /* ── KPI CARDS ─────────────────────── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:22px}
@@ -514,7 +606,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 .landing-mobile-menu a:hover{color:var(--saffron)}
 
 .landing-hero{
-  background:var(--ink);color:white;padding:72px 6vw 64px;
+  background:var(--ink-fixed);color:white;padding:72px 6vw 64px;
   position:relative;overflow:hidden;
 }
 .landing-hero-glow{
@@ -594,7 +686,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 }
 
 /* Stats band */
-.landing-stats-band{background:var(--ink);padding:40px 6vw}
+.landing-stats-band{background:var(--ink-fixed);padding:40px 6vw}
 .landing-stats-inner{
   max-width:1000px;margin:0 auto;display:grid;
   grid-template-columns:repeat(4,1fr);gap:20px;text-align:center;
@@ -767,14 +859,14 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 /* ── LOGIN ─────────────────────────── */
 .login-shell{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
 .login-brand{
-  background:var(--ink);isolation:isolate;
+  background:var(--ink-fixed);isolation:isolate;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:60px;position:relative;overflow:hidden;
 }
 .login-brand-bg{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;opacity:.55}
 .login-brand::before{
   content:'';position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(180deg,rgba(15,15,26,.5) 0%,rgba(15,15,26,.82) 55%,var(--ink) 92%);
+  background:linear-gradient(180deg,rgba(15,15,26,.5) 0%,rgba(15,15,26,.82) 55%,var(--ink-fixed) 92%);
 }
 .login-form-col{
   display:flex;align-items:center;justify-content:center;
