@@ -1,12 +1,16 @@
 import {useEffect,useState} from 'react';
 import {motion,AnimatePresence} from 'framer-motion';
 import {useSearchParams} from 'react-router-dom';
-import {billingAPI,tablesAPI,ordersAPI} from '../api';
-import {Smartphone,CreditCard,Banknote,Shuffle,CheckCircle2,Wallet,ArrowLeft,Receipt} from 'lucide-react';
+import {billingAPI,tablesAPI,ordersAPI,tenantAPI} from '../api';
+import {Smartphone,CreditCard,Banknote,Shuffle,CheckCircle2,Wallet,ArrowLeft,Receipt,Printer} from 'lucide-react';
 import {notifySuccess,notifyError} from '../lib/toast';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import WhatsAppShare from '../components/billing/WhatsAppShare';
+import {formatQty} from '../lib/formatQty';
 import {useLanguage} from '../context/LanguageContext';
+
+const openBillPrint=(id)=>window.open(`/print/bill/${id}`,'_blank');
 
 export default function BillingPage(){
   const {t}=useLanguage();
@@ -24,6 +28,7 @@ export default function BillingPage(){
   const [discount,setDiscount]=useState(0);
   const [bills,setBills]=useState(null);
   const [success,setSuccess]=useState(null);
+  const [tenant,setTenant]=useState(null);
 
   const pickTable=async t=>{
     setSel(t);setSuccess(null);setDiscount(0);
@@ -35,10 +40,12 @@ export default function BillingPage(){
     Promise.all([
       tablesAPI.getAll(),
       billingAPI.getAll(),
-    ]).then(([tRes,bRes])=>{
+      tenantAPI.get(),
+    ]).then(([tRes,bRes,tenRes])=>{
       const openTables=tRes.data.filter(t=>['occupied','bill_requested'].includes(t.status));
       setTables(openTables);
       setBills(bRes.data.slice(0,12));
+      setTenant(tenRes.data);
       const preselectId=searchParams.get('table');
       if(preselectId){
         const match=openTables.find(t=>t.id===preselectId);
@@ -49,6 +56,7 @@ export default function BillingPage(){
   },[]);
 
   const allItems=orders.flatMap(o=>o.items);
+  const customer=orders.find(o=>o.customer_name||o.customer_phone);
   const gross=allItems.reduce((s,i)=>s+i.price*i.qty,0);
   const net=Math.max(0,gross-discount);
   const cgst=net*.025,sgst=net*.025,total=net+cgst+sgst;
@@ -66,7 +74,7 @@ export default function BillingPage(){
 
   return(
     <div>
-      <div className="grid-2 gap-4" style={{marginBottom:20}}>
+      <div className="grid-2 gap-4 billing-top-grid" style={{marginBottom:20}}>
         {/* Table picker */}
         <div className="card">
           <div className="card-hd"><div className="card-hd-title">{t('billing.selectTable','Select Table to Bill')}</div></div>
@@ -101,15 +109,24 @@ export default function BillingPage(){
             {bills.length===0?<EmptyState icon={<Receipt size={40} strokeWidth={1.5}/>} title={t('billing.noBillsYet','No bills yet')}/>
             :bills.map((b,i)=>(
               <motion.div key={b.id} initial={{opacity:0,x:16}} animate={{opacity:1,x:0}} transition={{delay:i*.04}}
-                className="flex" style={{padding:'10px 20px',borderBottom:'1px solid var(--border)'}}>
-                <div style={{flex:1}}>
+                className="flex" style={{padding:'10px 20px',borderBottom:'1px solid var(--border)',flexWrap:'wrap',rowGap:8,alignItems:'flex-start'}}>
+                <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:700}}>#{b.bill_number}</div>
                   <div style={{fontSize:11,color:'var(--muted)'}}>{new Date(b.created_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+                  {b.customer_name&&<div style={{fontSize:11,color:'var(--slate)',marginTop:1}}>{b.customer_name}</div>}
                 </div>
                 <div style={{fontFamily:'var(--font-d)',fontWeight:800,color:'var(--saffron)',marginRight:10}}>
                   ₹{b.grand_total?.toFixed(0)}
                 </div>
-                <span className={`badge ${b.status==='paid'?'bg-jade':'bg-amber'}`}>{b.status==='paid'?t('billing.statusPaid','paid'):t('billing.statusGenerated','generated')}</span>
+                <span className={`badge ${b.status==='paid'?'bg-jade':'bg-amber'}`} style={{marginRight:b.status==='paid'?8:0}}>{b.status==='paid'?t('billing.statusPaid','paid'):t('billing.statusGenerated','generated')}</span>
+                {b.status==='paid'&&(
+                  <div className="flex gap-1">
+                    <button className="tb-btn" style={{width:30,height:30}} onClick={()=>openBillPrint(b.id)} aria-label={t('billing.printBill','Print Bill')}>
+                      <Printer size={14}/>
+                    </button>
+                    <WhatsAppShare bill={b} tenantName={tenant?.name} phone={b.customer_phone} compact/>
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
@@ -123,7 +140,12 @@ export default function BillingPage(){
             initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} exit={{opacity:0,y:12}}
             transition={{type:'spring',stiffness:280,damping:26}}>
             <div className="card-hd">
-              <div className="card-hd-title">{t('billing.billPreview','Table {n} — Bill Preview').replace('{n}',sel.number)}</div>
+              <div>
+                <div className="card-hd-title">{t('billing.billPreview','Table {n} — Bill Preview').replace('{n}',sel.number)}</div>
+                {customer?.customer_name&&(
+                  <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>{t('billing.customerLabel','Customer: {n}').replace('{n}',customer.customer_name)}</div>
+                )}
+              </div>
               <div className="flex gap-2">
                 <span className="badge bg-jade">{t('billing.gstIncl','GST Incl.')}</span>
                 <span className="badge bg-saffron">{t('billing.fssaiCompliant','FSSAI Compliant')}</span>
@@ -137,7 +159,7 @@ export default function BillingPage(){
                     <motion.div key={i} className="bill-row"
                       initial={{opacity:0,x:-12}} animate={{opacity:1,x:0}} transition={{delay:i*.04}}>
                       <div className="bill-row-name">{it.name}</div>
-                      <div className="bill-row-qty">× {it.qty}</div>
+                      <div className="bill-row-qty">{formatQty(it.qty,it.unit)}</div>
                       <div className="bill-row-price">₹{(it.price*it.qty).toLocaleString('en-IN')}</div>
                     </motion.div>
                   ))}
@@ -192,7 +214,12 @@ export default function BillingPage(){
             <div style={{fontSize:40,fontWeight:800,color:'var(--saffron)',fontFamily:'var(--font-d)',margin:'12px 0'}}>
               ₹{success.grand_total?.toFixed(0)}
             </div>
-            <div style={{color:'var(--muted)',marginBottom:20}}>{t('billing.billRef','Bill #{n} · {method}').replace('{n}',success.bill_number).replace('{method}',pay.toUpperCase())}</div>
+            <div style={{color:'var(--muted)',marginBottom:success.customer_name?4:20}}>{t('billing.billRef','Bill #{n} · {method}').replace('{n}',success.bill_number).replace('{method}',pay.toUpperCase())}</div>
+            {success.customer_name&&<div style={{color:'var(--slate)',fontWeight:600,marginBottom:20}}>{t('billing.customerLabel','Customer: {n}').replace('{n}',success.customer_name)}</div>}
+            <div className="flex gap-2" style={{justifyContent:'center',flexWrap:'wrap',marginBottom:16}}>
+              <button className="btn btn-pr" onClick={()=>openBillPrint(success.id)}><Printer size={15}/> {t('billing.printBill','Print Bill')}</button>
+              <WhatsAppShare bill={success} tenantName={tenant?.name} phone={success.customer_phone}/>
+            </div>
             <button className="btn btn-sc" onClick={()=>{setSel(null);setSuccess(null)}}><ArrowLeft size={14}/> {t('billing.newBill','New Bill')}</button>
           </motion.div>
         )}

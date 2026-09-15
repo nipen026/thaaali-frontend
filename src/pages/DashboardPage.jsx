@@ -5,6 +5,7 @@ import {analyticsAPI} from '../api';
 import {useAuth} from '../context/AuthContext';
 import {IndianRupee,ClipboardList,Grid3X3,Hourglass,TrendingUp,Package,CircleDot,AlertTriangle} from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
+import ItemAvatar from '../components/ui/ItemAvatar';
 import {useLanguage} from '../context/LanguageContext';
 
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -193,7 +194,7 @@ export default function DashboardPage(){
                 initial={{opacity:0,x:16}} animate={{opacity:1,x:0}} transition={{delay:.55+i*.06}}
                 className="flex gap-3"
                 style={{padding:'10px 20px',borderBottom:i<topItems.length-1?'1px solid var(--border)':''}}>
-                <span style={{fontSize:20}} aria-hidden="true">{item.image}</span>
+                <ItemAvatar id={item.id} name={item.name} size={32}/>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:600}}>{item.name}</div>
                   <div style={{fontSize:11,color:'var(--muted)'}}>{t('dashboard.ordersCount','{n} orders').replace('{n}',item.orders_count)}</div>

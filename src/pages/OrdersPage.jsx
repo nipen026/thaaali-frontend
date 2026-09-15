@@ -6,6 +6,7 @@ import {UtensilsCrossed,Bike,MessageCircle,Globe,Phone,ClipboardList} from 'luci
 import {useApiData} from '../lib/useApiData';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import {formatQty} from '../lib/formatQty';
 import {useLanguage} from '../context/LanguageContext';
 
 const SB={pending:'bg-amber',preparing:'bg-saffron',ready:'bg-jade',delivered:'bg-gray',billed:'bg-gray'};
@@ -59,7 +60,7 @@ export default function OrdersPage(){
                   </div>
                   <div className="flex gap-1" style={{flexWrap:'wrap'}}>
                     {o.items.slice(0,3).map((it,i)=>(
-                      <span key={i} style={{fontSize:12,color:'var(--slate)',background:'var(--surface)',padding:'2px 8px',borderRadius:4,border:'1px solid var(--border)'}}>{it.qty}× {it.name}</span>
+                      <span key={i} style={{fontSize:12,color:'var(--slate)',background:'var(--surface)',padding:'2px 8px',borderRadius:4,border:'1px solid var(--border)'}}>{formatQty(it.qty,it.unit)} {it.name}</span>
                     ))}
                     {o.items.length>3&&<span style={{fontSize:12,color:'var(--muted)'}}>{t('orders.moreItems','+{n} more').replace('{n}',o.items.length-3)}</span>}
                   </div>

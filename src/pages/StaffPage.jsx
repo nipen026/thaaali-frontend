@@ -14,7 +14,7 @@ const RC={owner:'bg-saffron',restaurant_manager:'bg-sky',hotel_manager:'bg-purpl
 const MANAGE_ROLES=['owner','restaurant_manager','hotel_manager'];
 const ROLE_BADGE_KEY={owner:'staff.roleBadgeOwner',restaurant_manager:'staff.roleBadgeRestaurantManager',hotel_manager:'staff.roleBadgeHotelManager',waiter:'staff.roleBadgeWaiter',cashier:'staff.roleBadgeCashier',kitchen:'staff.roleBadgeKitchen',hotel_desk:'staff.roleBadgeHotelDesk'};
 const SHIFT_KEY={morning:'staff.shiftMorning',evening:'staff.shiftEvening',night:'staff.shiftNight'};
-const EMPTY_FORM={name:'',email:'',password:'',role:'waiter',phone:'',shift:'morning'};
+const EMPTY_FORM={name:'',email:'',password:'',role:'waiter',phone:'',shift:'morning',required_hours_per_day:8};
 
 export default function StaffPage(){
   const {t}=useLanguage();
@@ -37,19 +37,20 @@ export default function StaffPage(){
   const shiftLabel=(shift)=>t(SHIFT_KEY[shift],shift);
 
   const openCreate=()=>{setForm(EMPTY_FORM);setModal('create');};
-  const openEdit=(s)=>{setForm({name:s.name,role:s.role,phone:s.phone||'',shift:s.shift}); setModal(s);};
+  const openEdit=(s)=>{setForm({name:s.name,role:s.role,phone:s.phone||'',shift:s.shift,required_hours_per_day:s.required_hours_per_day??8}); setModal(s);};
   const set=(field)=>(e)=>setForm(f=>({...f,[field]:e.target.value}));
 
   const submit=async(e)=>{
     e.preventDefault();
     setBusy(true);
     try{
+      const payload={...form,required_hours_per_day:Number(form.required_hours_per_day)||8};
       if(modal==='create'){
-        const r=await staffAPI.create(form);
+        const r=await staffAPI.create(payload);
         setStaff(prev=>[...prev,r.data]);
         toast.success(`${r.data.name} ${t('staff.addedAs','added as')} ${roleBadgeLabel(r.data.role)}`);
       }else{
-        const r=await staffAPI.update(modal.id,{name:form.name,role:form.role,phone:form.phone,shift:form.shift});
+        const r=await staffAPI.update(modal.id,{name:form.name,role:form.role,phone:form.phone,shift:form.shift,required_hours_per_day:payload.required_hours_per_day});
         setStaff(prev=>prev.map(s=>s.id===r.data.id?r.data:s));
         toast.success(t('staff.staffUpdated','Staff member updated'));
       }
@@ -124,7 +125,7 @@ export default function StaffPage(){
                 )}
               </div>
               <div className="flex gap-1" style={{marginTop:12,paddingTop:12,borderTop:'1px solid var(--border)',fontSize:12.5,color:'var(--muted)'}}>
-                <Phone size={12}/> {s.phone||'—'} · {shiftLabel(s.shift)} {t('staff.shiftSuffix','shift')}
+                <Phone size={12}/> {s.phone||'—'} · {shiftLabel(s.shift)} {t('staff.shiftSuffix','shift')} · {t('staff.requiredHoursShort','{h}h/day required').replace('{h}',s.required_hours_per_day??8)}
               </div>
             </motion.div>
           ))}
@@ -178,9 +179,16 @@ export default function StaffPage(){
               </select>
             </div>
           </div>
-          <div className="fgrp">
-            <label className="flbl" htmlFor="staff-phone">{t('common.phone','Phone')}</label>
-            <input id="staff-phone" className="finput" value={form.phone} onChange={set('phone')} placeholder="9876543210"/>
+          <div className="grid-2 gap-3">
+            <div className="fgrp">
+              <label className="flbl" htmlFor="staff-phone">{t('common.phone','Phone')}</label>
+              <input id="staff-phone" className="finput" value={form.phone} onChange={set('phone')} placeholder="9876543210"/>
+            </div>
+            <div className="fgrp">
+              <label className="flbl" htmlFor="staff-required-hours">{t('staff.requiredHoursPerDay','Required hours/day')}</label>
+              <input id="staff-required-hours" className="finput" type="number" min="0" max="24" step="0.5"
+                value={form.required_hours_per_day} onChange={set('required_hours_per_day')}/>
+            </div>
           </div>
         </form>
       </Modal>

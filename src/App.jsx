@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import Layout from './components/layout/Layout';
 import LandingPage from './pages/LandingPage';
+import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
@@ -15,6 +16,7 @@ import MenuPage from './pages/MenuPage';
 import BillingPage from './pages/BillingPage';
 import InventoryPage from './pages/InventoryPage';
 import StaffPage from './pages/StaffPage';
+import AttendancePage from './pages/AttendancePage';
 import HotelPage from './pages/HotelPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import LedgerPage from './pages/LedgerPage';
@@ -24,6 +26,7 @@ import TableSetupPage from './pages/setup/TableSetupPage';
 import MenuSetupPage from './pages/setup/MenuSetupPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import PrintBillPage from './pages/PrintBillPage';
 import { landingFor } from './config/nav';
 import logoLockupDark from './assets/brand/logo-lockup-dark.png';
 
@@ -81,9 +84,11 @@ export default function App(){
         />
         <Routes>
           <Route path="/" element={<RootRoute/>}/>
+          <Route path="/pricing" element={<PricingPage/>}/>
           <Route path="/login" element={<LoginPage/>}/>
           <Route path="/signup" element={<SignupPage/>}/>
           <Route path="/onboarding" element={<Guarded><OnboardingWizardPage/></Guarded>}/>
+          <Route path="/print/bill/:id" element={<Guarded><PrintBillPage/></Guarded>}/>
           <Route path="/app" element={<Guarded><Layout/></Guarded>}>
             <Route index element={<AppIndexRedirect/>}/>
             <Route path="dashboard" element={<DashboardPage/>}/>
@@ -94,6 +99,7 @@ export default function App(){
             <Route path="billing"   element={<BillingPage/>}/>
             <Route path="inventory" element={<InventoryPage/>}/>
             <Route path="staff"     element={<StaffPage/>}/>
+            <Route path="attendance" element={<AttendancePage/>}/>
             <Route path="hotel"     element={<HotelPage/>}/>
             <Route path="analytics" element={<AnalyticsPage/>}/>
             <Route path="ledger"    element={<LedgerPage/>}/>

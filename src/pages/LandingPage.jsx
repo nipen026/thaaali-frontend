@@ -4,11 +4,12 @@ import { motion } from 'framer-motion';
 import {
   Grid3X3, ClipboardList, Monitor, Wallet, Package, TrendingUp, Building2, Users,
   Crown, Briefcase, Utensils, CreditCard, ChefHat, ArrowRight, Menu, X,
-  ShieldCheck, Zap, Layers, UserPlus, Settings2, Rocket, Sparkles, CheckCircle2,
+  ShieldCheck, Zap, Layers, UserPlus, Settings2, Rocket, Sparkles, CheckCircle2, Check,
 } from 'lucide-react';
 import { useDocumentHead } from '../lib/useDocumentHead';
 import ProductSlider from '../components/landing/ProductSlider';
 import FAQAccordion from '../components/landing/FAQAccordion';
+import { PLANS, BILLING_CYCLES, planPriceLabel } from '../config/pricing';
 import logoLockup from '../assets/brand/logo-lockup.png';
 import thaliHero from '../assets/landing/thali-hero.jpg';
 import thaliFoodTable from '../assets/landing/thali-food-table.jpg';
@@ -28,6 +29,7 @@ const STRUCTURED_DATA = {
 const NAV_LINKS = [
   { href: '#features', label: 'Features' },
   { href: '#product', label: 'Product' },
+  { href: '#pricing', label: 'Pricing' },
   { href: '#roles', label: 'Teams' },
   { href: '#faq', label: 'FAQ' },
 ];
@@ -311,6 +313,44 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
+      <section className="landing-section" id="pricing" style={{ paddingTop: 0 }}>
+        <Reveal>
+          <div className="landing-section-hd">
+            <span className="landing-kicker">Simple, Transparent Pricing</span>
+            <h2>A plan built for your kind of business</h2>
+            <p>Affordable pricing for Indian cafes, restaurants, and hotels. No hidden fees, no per-transaction cuts. 14-day free trial, no card required.</p>
+          </div>
+        </Reveal>
+        <div className="pricing-teaser-grid">
+          {PLANS.map(({ id, name, tagline, popular, highlights }, i) => {
+            const price = planPriceLabel(PLANS[i], BILLING_CYCLES.monthly);
+            return (
+              <Reveal delay={i * 0.06} key={id}>
+                <div className={`pricing-teaser-card ${popular ? 'popular' : ''}`}>
+                  {popular && <div className="pricing-popular-tag"><Crown size={12} /> Most Popular</div>}
+                  <h3>{name}</h3>
+                  <p className="pricing-card-tagline">{tagline}</p>
+                  <div className="pricing-card-price">
+                    <span className="amt">{price.amount}</span>
+                    <span className="per">{price.period}</span>
+                  </div>
+                  <ul className="pricing-card-features">
+                    {highlights.slice(0, 3).map((h) => <li key={h}><Check size={15} /> {h}</li>)}
+                  </ul>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+        <Reveal delay={0.15}>
+          <div style={{ textAlign: 'center', marginTop: 30 }}>
+            <Link to="/pricing" className="btn btn-sc btn-lg">
+              See full plan comparison &amp; yearly pricing <ArrowRight size={15} />
+            </Link>
+          </div>
+        </Reveal>
+      </section>
+
       <section className="landing-section" style={{ paddingTop: 0 }}>
         <Reveal>
           <div className="landing-section-hd">
@@ -390,6 +430,7 @@ export default function LandingPage() {
             <h4>Product</h4>
             <a href="#features">Features</a>
             <a href="#product">Product tour</a>
+            <Link to="/pricing">Pricing</Link>
             <a href="#roles">Teams</a>
           </div>
           <div className="landing-footer-col">

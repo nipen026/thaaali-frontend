@@ -8,6 +8,7 @@ import menu from './dict/menu';
 import billing from './dict/billing';
 import inventory from './dict/inventory';
 import staff from './dict/staff';
+import attendance from './dict/attendance';
 import hotel from './dict/hotel';
 import analytics from './dict/analytics';
 import ledger from './dict/ledger';
@@ -20,7 +21,7 @@ import auth from './dict/auth';
 // key, which they shouldn't (each domain namespaces its keys, e.g. 'dashboard.title').
 const DOMAINS = [
   common, chrome, dashboard, tables, orders, kitchen, menu, billing,
-  inventory, staff, hotel, analytics, ledger, setup, landing, auth,
+  inventory, staff, attendance, hotel, analytics, ledger, setup, landing, auth,
 ];
 
 const TRANSLATIONS = {};

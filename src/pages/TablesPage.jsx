@@ -9,7 +9,11 @@ import {useApiData} from '../lib/useApiData';
 import Modal from '../components/ui/Modal';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import ItemAvatar from '../components/ui/ItemAvatar';
+import {formatQty} from '../lib/formatQty';
 import {useLanguage} from '../context/LanguageContext';
+
+const DEFAULT_GRAMS=100;
 
 const SC={
   available:{cls:'ts-available',dot:'#0F7A45'},
@@ -47,6 +51,8 @@ export default function TablesPage(){
   const [saving,setSaving]=useState(false);
   const [zone,setZone]=useState('all');
   const [,setTick]=useState(0);
+  const [customerName,setCustomerName]=useState('');
+  const [customerPhone,setCustomerPhone]=useState('');
 
   useEffect(()=>{
     const t=setInterval(()=>setTick(x=>x+1),30000);
@@ -60,29 +66,41 @@ export default function TablesPage(){
   },[socket,setTables]);
 
   const pick=async tbl=>{
-    setSel(tbl);setCart([]);setView('detail');setEditingOrder(null);
+    setSel(tbl);setCart([]);setView('detail');setEditingOrder(null);setCustomerName('');setCustomerPhone('');
     if(tbl.status!=='available'){
       const r=await ordersAPI.getAll({table_id:tbl.id});
       setOrders(r.data.filter(o=>o.status!=='billed'));
     }else setOrders([]);
   };
 
-  const startNewOrder=()=>{setEditingOrder(null);setCart([]);setView('order');};
+  // Reuses whatever name/phone was captured on this table's other open orders, so re-opening
+  // "Add Order" on an already-seated table doesn't ask the customer to repeat themselves.
+  const startNewOrder=()=>{
+    setEditingOrder(null);setCart([]);setView('order');
+    const withCustomer=orders.find(o=>o.customer_name||o.customer_phone);
+    setCustomerName(withCustomer?.customer_name||'');
+    setCustomerPhone(withCustomer?.customer_phone||'');
+  };
   const startEditOrder=order=>{
     setEditingOrder(order);
-    setCart(order.items.map(it=>({item_id:it.item_id,menu_id:it.menu_id,name:it.name,price:it.price,qty:it.qty,spice:it.spice,notes:it.notes})));
+    setCart(order.items.map(it=>({item_id:it.item_id,menu_id:it.menu_id,name:it.name,price:it.price,qty:it.qty,unit:it.unit||'item',spice:it.spice,notes:it.notes})));
     setView('order');
   };
   const backToDetail=()=>{setView('detail');setEditingOrder(null);setCart([]);};
 
+  // Gram-priced items don't make sense to add "one at a time" — they start at a sensible
+  // default weight and are then adjusted via a direct grams input (see setCartGrams below),
+  // not the +/- stepper unit-counted items use.
   const addToCart=item=>{
     setCart(p=>{
       const ex=p.find(c=>c.menu_id===item.id);
+      if(item.pricing_unit==='gram') return ex?p:[...p,{menu_id:item.id,name:item.name,price:item.price,qty:DEFAULT_GRAMS,unit:'gram',spice:item.spice,notes:''}];
       return ex?p.map(c=>c.menu_id===item.id?{...c,qty:c.qty+1}:c)
-        :[...p,{menu_id:item.id,name:item.name,price:item.price,qty:1,spice:item.spice,notes:''}];
+        :[...p,{menu_id:item.id,name:item.name,price:item.price,qty:1,unit:'item',spice:item.spice,notes:''}];
     });
   };
-  const removeFromCart=id=>setCart(p=>{const e=p.find(c=>c.menu_id===id);return e?.qty>1?p.map(c=>c.menu_id===id?{...c,qty:c.qty-1}:c):p.filter(c=>c.menu_id!==id)});
+  const removeFromCart=id=>setCart(p=>{const e=p.find(c=>c.menu_id===id);return e?.qty>1&&e.unit!=='gram'?p.map(c=>c.menu_id===id?{...c,qty:c.qty-1}:c):p.filter(c=>c.menu_id!==id)});
+  const setCartGrams=(id,grams)=>setCart(p=>p.map(c=>c.menu_id===id?{...c,qty:Math.max(0,grams)}:c));
 
   const refreshTableOrders=async()=>{
     const r=await ordersAPI.getAll({table_id:sel.id});
@@ -97,7 +115,8 @@ export default function TablesPage(){
         await ordersAPI.updateItems(editingOrder.id,cart);
         notifySuccess(t('tables.orderUpdated','Order updated'));
       }else{
-        await ordersAPI.create({table_id:sel.id,channel:'dine_in',items:cart});
+        await ordersAPI.create({table_id:sel.id,channel:'dine_in',items:cart,
+          customer_name:customerName.trim()||undefined,customer_phone:customerPhone.trim()||undefined});
         if(sel.status==='available'){
           const r=await tablesAPI.seat(sel.id,{guests:2,waiter:user?.id});
           setTables(p=>p.map(tb=>tb.id===sel.id?r.data:tb));setSel(r.data);
@@ -208,9 +227,14 @@ export default function TablesPage(){
                           )}
                         </div>
                       </div>
+                      {o.customer_name&&(
+                        <div style={{fontSize:12,fontWeight:600,color:'var(--ink)',marginBottom:6}}>
+                          {t('tables.customerLabel','Customer: {n}').replace('{n}',o.customer_name)}
+                        </div>
+                      )}
                       {o.items.map((it,i)=>(
                         <div key={i} style={{fontSize:13,color:'var(--slate)',padding:'2px 0'}}>
-                          {it.qty}× {it.name}
+                          {formatQty(it.qty,it.unit)} {it.name}
                           {it.notes&&<span style={{color:'var(--crimson)',fontSize:11}}> ({it.notes})</span>}
                         </div>
                       ))}
@@ -231,6 +255,18 @@ export default function TablesPage(){
             <div style={{fontSize:13.5,fontWeight:700,marginBottom:14}}>
               {editingOrder?t('tables.editOrderTitle','Edit order — Table {n}').replace('{n}',sel.number):t('tables.addItemsTitle','Add items — Table {n}').replace('{n}',sel.number)}
             </div>
+            {!editingOrder&&(
+              <div className="grid-2 gap-3">
+                <div className="fgrp">
+                  <label className="flbl" htmlFor="order-customer-name">{t('tables.customerName','Customer name (optional)')}</label>
+                  <input id="order-customer-name" className="finput" value={customerName} onChange={e=>setCustomerName(e.target.value)} placeholder={t('tables.customerNamePlaceholder','Priya Sharma')}/>
+                </div>
+                <div className="fgrp">
+                  <label className="flbl" htmlFor="order-customer-phone">{t('tables.customerPhone','Phone (optional)')}</label>
+                  <input id="order-customer-phone" className="finput" type="tel" value={customerPhone} onChange={e=>setCustomerPhone(e.target.value.replace(/\D/g,''))} maxLength={10} placeholder="9876543210"/>
+                </div>
+              </div>
+            )}
             <div style={{maxHeight:280,overflowY:'auto',display:'flex',flexDirection:'column',gap:7,marginBottom:16}}>
               {(menu||[]).map(item=>{
                 const inCart=cart.find(c=>c.menu_id===item.id);
@@ -244,26 +280,42 @@ export default function TablesPage(){
                     onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}
                     onClick={()=>addToCart(item)}
                     onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();addToCart(item);}}}>
-                    <span style={{fontSize:20}} aria-hidden="true">{item.image}</span>
+                    <ItemAvatar id={item.id} name={item.name} size={32}/>
                     <div style={{flex:1}}>
                       <div style={{fontSize:13,fontWeight:600}}>{item.name}</div>
-                      <div style={{fontSize:11,color:'var(--muted)'}}>{item.spice} · ₹{item.price}</div>
+                      <div style={{fontSize:11,color:'var(--muted)'}}>{item.spice} · ₹{item.price}{item.pricing_unit==='gram'&&'/g'}</div>
                     </div>
-                    {inCart?
-                      <div className="flex gap-2">
-                        <button aria-label={t('tables.removeOne','Remove one {name}').replace('{name}',item.name)} onClick={e=>{e.stopPropagation();removeFromCart(item.id)}}
-                          style={{width:24,height:24,borderRadius:'50%',background:'var(--surface-2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                          <Minus size={13}/>
+                    {item.pricing_unit==='gram'?(
+                      inCart?
+                        <div className="flex gap-2" onClick={e=>e.stopPropagation()}>
+                          <input type="number" min="0" step="10" className="finput" style={{width:70,padding:'5px 8px',fontSize:13,textAlign:'right'}}
+                            value={inCart.qty} onChange={e=>setCartGrams(item.id,Number(e.target.value))}
+                            aria-label={t('tables.gramsFor','Grams of {name}').replace('{name}',item.name)}/>
+                          <span style={{fontSize:12,color:'var(--muted)',alignSelf:'center'}}>g</span>
+                          <button aria-label={t('tables.removeItem','Remove {name}').replace('{name}',item.name)} onClick={()=>setCart(p=>p.filter(c=>c.menu_id!==item.id))}
+                            style={{width:24,height:24,borderRadius:'50%',background:'var(--crimson-50)',color:'var(--crimson)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <Minus size={13}/>
+                          </button>
+                        </div>
+                        :<button aria-label={t('tables.addToCart','Add {name} to cart').replace('{name}',item.name)} className="mc-add" onClick={e=>{e.stopPropagation();addToCart(item)}} style={{opacity:.7,transform:'none'}}>
+                          <Plus size={15}/>
                         </button>
-                        <span style={{fontWeight:800,color:'var(--saffron)',fontSize:15}}>{inCart.qty}</span>
-                        <button aria-label={t('tables.addOneMore','Add one more {name}').replace('{name}',item.name)} className="mc-add" onClick={e=>{e.stopPropagation();addToCart(item)}} style={{opacity:1,transform:'none',width:24,height:24}}>
-                          <Plus size={13}/>
+                    ):(
+                      inCart?
+                        <div className="flex gap-2">
+                          <button aria-label={t('tables.removeOne','Remove one {name}').replace('{name}',item.name)} onClick={e=>{e.stopPropagation();removeFromCart(item.id)}}
+                            style={{width:24,height:24,borderRadius:'50%',background:'var(--surface-2)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                            <Minus size={13}/>
+                          </button>
+                          <span style={{fontWeight:800,color:'var(--saffron)',fontSize:15}}>{inCart.qty}</span>
+                          <button aria-label={t('tables.addOneMore','Add one more {name}').replace('{name}',item.name)} className="mc-add" onClick={e=>{e.stopPropagation();addToCart(item)}} style={{opacity:1,transform:'none',width:24,height:24}}>
+                            <Plus size={13}/>
+                          </button>
+                        </div>
+                        :<button aria-label={t('tables.addToCart','Add {name} to cart').replace('{name}',item.name)} className="mc-add" onClick={e=>{e.stopPropagation();addToCart(item)}} style={{opacity:.7,transform:'none'}}>
+                          <Plus size={15}/>
                         </button>
-                      </div>
-                      :<button aria-label={t('tables.addToCart','Add {name} to cart').replace('{name}',item.name)} className="mc-add" onClick={e=>{e.stopPropagation();addToCart(item)}} style={{opacity:.7,transform:'none'}}>
-                        <Plus size={15}/>
-                      </button>
-                    }
+                    )}
                   </div>
                 );
               })}
@@ -271,10 +323,10 @@ export default function TablesPage(){
             {cart.length>0&&(
               <motion.div initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}
                 style={{background:'var(--saffron-50)',border:'1px solid rgba(255,107,0,.25)',borderRadius:'var(--r-sm)',padding:14,marginBottom:14}}>
-                <div style={{fontSize:11,fontWeight:800,color:'var(--saffron-dark)',marginBottom:8}}>{t('tables.cartLabel','CART — {n} items').replace('{n}',cart.reduce((s,c)=>s+c.qty,0))}</div>
+                <div style={{fontSize:11,fontWeight:800,color:'var(--saffron-dark)',marginBottom:8}}>{t('tables.cartLabel','CART — {n} items').replace('{n}',cart.length)}</div>
                 {cart.map(c=>(
                   <div key={c.menu_id} className="flex-between" style={{fontSize:13,padding:'2px 0'}}>
-                    <span>{c.qty}× {c.name}</span>
+                    <span>{formatQty(c.qty,c.unit)} {c.name}</span>
                     <span style={{fontWeight:700}}>₹{c.price*c.qty}</span>
                   </div>
                 ))}

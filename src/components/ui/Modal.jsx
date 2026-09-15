@@ -6,13 +6,20 @@ export default function Modal({ open, onClose, title, headerExtra, children, foo
   const titleId = useId();
   const modalRef = useRef(null);
   const triggerRef = useRef(null);
+  // Every caller passes `onClose` as a fresh inline arrow function, so its identity changes on
+  // every render of the parent — including renders caused by typing into a controlled input
+  // inside this modal. Reading it via a ref (kept fresh below, outside the effect) lets the
+  // open/close effect depend on `open` alone, instead of re-running — and re-stealing focus
+  // onto the first focusable element — on every keystroke in the parent.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
     triggerRef.current = document.activeElement;
 
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') { onClose?.(); return; }
+      if (e.key === 'Escape') { onCloseRef.current?.(); return; }
       if (e.key !== 'Tab' || !modalRef.current) return;
       const focusable = modalRef.current.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -31,7 +38,7 @@ export default function Modal({ open, onClose, title, headerExtra, children, foo
       document.removeEventListener('keydown', onKeyDown);
       triggerRef.current?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   return (
     <AnimatePresence>

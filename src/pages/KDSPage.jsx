@@ -9,6 +9,7 @@ import {
 import {notifySuccess,notifyInfo} from '../lib/toast';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import {formatQty} from '../lib/formatQty';
 import {useLanguage} from '../context/LanguageContext';
 
 const elapsed=ts=>{
@@ -102,7 +103,7 @@ export default function KDSPage(){
         <div className="kds-grid">
           <AnimatePresence mode="popLayout">
             {filtered.map(order=>{
-              const t=elapsed(order.created_at);
+              const el=elapsed(order.created_at);
               return(
                 <motion.div key={order.id}
                   className="kds-card"
@@ -121,15 +122,15 @@ export default function KDSPage(){
                         {t('kitchen.itemsCount','{n} items').replace('{n}',order.items.length)} · #{order.id.slice(0,6).toUpperCase()}
                       </div>
                     </div>
-                    <div className={`kds-time flex gap-1${t.urgent?' urgent':t.rushing?' rushing':''}`}>
-                      <Timer size={13}/> {t.text}
+                    <div className={`kds-time flex gap-1${el.urgent?' urgent':el.rushing?' rushing':''}`}>
+                      <Timer size={13}/> {el.text}
                     </div>
                   </div>
 
                   <div className="kds-items">
                     {order.items.map((item,i)=>(
                       <div key={i} className="kds-row">
-                        <span className="kds-qty">{item.qty}×</span>
+                        <span className="kds-qty">{formatQty(item.qty,item.unit)}</span>
                         <div style={{flex:1}}>
                           <div className="kds-name">{item.name}</div>
                           {item.spice&&item.spice!=='mild'&&<div className="kds-note flex gap-1"><Flame size={11}/> {item.spice}</div>}

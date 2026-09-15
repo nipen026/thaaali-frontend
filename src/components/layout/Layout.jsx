@@ -2,12 +2,13 @@ import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { LogOut, Bell, Menu as MenuIcon } from 'lucide-react';
 import NewOrderToast from './NewOrderToast';
 import UserMenu from './UserMenu';
+import NotificationCenter from './NotificationCenter';
 import logoLockupDark from '../../assets/brand/logo-lockup-dark.png';
 import { NAV, PAGE_META, UNIVERSAL_ROUTES, routesForRole, landingFor } from '../../config/nav';
 import { API_URL } from '../../api';
@@ -22,6 +23,7 @@ export default function Layout(){
   const [pendingOrders,setPendingOrders]=useState(0);
   const [time,setTime]=useState(new Date());
   const [sbOpen,setSbOpen]=useState(false);
+  const [notifications,setNotifications]=useState([]);
 
   useEffect(()=>{
     const timerId=setInterval(()=>setTime(new Date()),60000);
@@ -37,17 +39,27 @@ export default function Layout(){
     return()=>document.removeEventListener('keydown',onKey);
   },[sbOpen]);
 
+  const pushNotification=(type,message)=>{
+    setNotifications(p=>[{id:`${Date.now()}-${Math.random().toString(36).slice(2,7)}`,type,message,time:Date.now(),read:false},...p].slice(0,30));
+  };
+  const markAllNotificationsRead=useCallback(()=>{
+    setNotifications(p=>p.map(n=>n.read?n:{...n,read:true}));
+  },[]);
+  const clearNotifications=useCallback(()=>setNotifications([]),[]);
+
   useEffect(()=>{
     socket.emit('join_role',user.role);
     socket.on('new_order',o=>{
       setPendingOrders(p=>p+1);
       toast.custom(()=><NewOrderToast order={o}/>,{duration:4000});
+      pushNotification('order',t('chrome.newOrderNotif','New order — Table {n}').replace('{n}',o.table_number||o.channel||'—'));
     });
     socket.on('waiter_called',d=>{
       toast(`Table ${d.table_num} calling waiter!`,{icon:<Bell size={16} color="var(--crimson)"/>,duration:6000});
+      pushNotification('call',t('chrome.waiterCalledNotif','Table {n} is calling a waiter').replace('{n}',d.table_num));
     });
     return()=>{socket.off('new_order');socket.off('waiter_called')};
-  },[user.role]);
+  },[user.role,t]);
 
   const sections=NAV[user.role]||NAV.owner;
   const meta=PAGE_META[loc.pathname]||{title:loc.pathname.slice(1),sub:''};
@@ -136,21 +148,19 @@ export default function Layout(){
             <button className="sb-hamburger" onClick={()=>setSbOpen(o=>!o)} aria-label={t('chrome.toggleNav','Toggle navigation menu')}>
               <MenuIcon size={18}/>
             </button>
-            <div>
+            <div className="tb-title-wrap">
               <h1 className="page-h">{t(meta.titleKey,meta.title)}</h1>
               {meta.sub&&<div className="page-sub">{t(meta.subKey,meta.sub)}</div>}
             </div>
           </div>
           <div className="tb-r">
             <div className="live-pill">
-              <div className="live-dot"/>{t('chrome.live','LIVE')}
+              <div className="live-dot"/><span className="live-label">{t('chrome.live','LIVE')}</span>
             </div>
-            <div style={{fontSize:12.5,color:'var(--muted)',fontWeight:500}}>
+            <div className="tb-clock">
               {time.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
             </div>
-            <button className="tb-btn" aria-label={t('chrome.notifications','Notifications')}>
-              <Bell size={17}/><div className="tb-notif-dot"/>
-            </button>
+            <NotificationCenter notifications={notifications} onMarkAllRead={markAllNotificationsRead} onClear={clearNotifications}/>
             <UserMenu/>
           </div>
         </motion.header>

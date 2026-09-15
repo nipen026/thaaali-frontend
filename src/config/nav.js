@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Grid3X3, ClipboardList, Monitor,
   UtensilsCrossed, Wallet, Package, Users, TrendingUp,
-  Building2, Store, BookOpen,
+  Building2, Store, BookOpen, Clock,
 } from 'lucide-react';
 
 // Single source of truth for both sidebar rendering (Layout.jsx) and route access
@@ -23,6 +23,7 @@ export const NAV = {
     {sect:'Operations',sectKey:'nav.sectOperations',links:[
       {to:'/app/inventory',Icon:Package,label:'Inventory',labelKey:'nav.inventory'},
       {to:'/app/staff',Icon:Users,label:'Staff',labelKey:'nav.staff'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
       {to:'/app/analytics',Icon:TrendingUp,label:'Analytics',labelKey:'nav.analytics'},
       {to:'/app/ledger',Icon:BookOpen,label:'Ledger',labelKey:'nav.ledger'},
     ]},
@@ -44,6 +45,7 @@ export const NAV = {
       {to:'/app/billing',Icon:Wallet,label:'Billing',labelKey:'nav.billing'},
       {to:'/app/inventory',Icon:Package,label:'Inventory',labelKey:'nav.inventory'},
       {to:'/app/staff',Icon:Users,label:'Staff',labelKey:'nav.staff'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
       {to:'/app/analytics',Icon:TrendingUp,label:'Analytics',labelKey:'nav.analytics'},
       {to:'/app/ledger',Icon:BookOpen,label:'Ledger',labelKey:'nav.ledger'},
     ]},
@@ -57,6 +59,7 @@ export const NAV = {
       {to:'/app/dashboard',Icon:LayoutDashboard,label:'Dashboard',labelKey:'nav.dashboard'},
       {to:'/app/hotel',Icon:Building2,label:'Hotel Module',labelKey:'nav.hotelModule'},
       {to:'/app/staff',Icon:Users,label:'Staff',labelKey:'nav.staff'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
       {to:'/app/analytics',Icon:TrendingUp,label:'Analytics',labelKey:'nav.analytics'},
     ]},
   ],
@@ -65,6 +68,7 @@ export const NAV = {
       {to:'/app/tables',Icon:Grid3X3,label:'My Tables',labelKey:'nav.myTables'},
       {to:'/app/orders',Icon:ClipboardList,label:'Active Orders',labelKey:'nav.activeOrders'},
       {to:'/app/menu',Icon:UtensilsCrossed,label:'Menu',labelKey:'nav.menu'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
     ]},
   ],
   cashier:[
@@ -72,16 +76,19 @@ export const NAV = {
       {to:'/app/billing',Icon:Wallet,label:'Billing',labelKey:'nav.billing'},
       {to:'/app/orders',Icon:ClipboardList,label:'Orders',labelKey:'nav.orders'},
       {to:'/app/ledger',Icon:BookOpen,label:'Ledger',labelKey:'nav.ledger'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
     ]},
   ],
   kitchen:[
     {sect:'Kitchen',sectKey:'nav.sectKitchen',links:[
       {to:'/app/kitchen',Icon:Monitor,label:'KDS Display',labelKey:'nav.kdsDisplay'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
     ]},
   ],
   hotel_desk:[
     {sect:'Hotel',sectKey:'nav.sectHotel',links:[
       {to:'/app/hotel',Icon:Building2,label:'Hotel Module',labelKey:'nav.hotelModule'},
+      {to:'/app/attendance',Icon:Clock,label:'Attendance',labelKey:'nav.attendance'},
     ]},
   ],
 };
@@ -95,6 +102,7 @@ export const PAGE_META = {
   '/app/billing':  {title:'Billing',         titleKey:'nav.billing',        sub:'GST-ready · UPI · Card · Cash · Split',                          subKey:'meta.billingSub'},
   '/app/inventory':{title:'Inventory',       titleKey:'nav.inventory',      sub:'Stock levels · Low-stock alerts',                                subKey:'meta.inventorySub'},
   '/app/staff':    {title:'Staff',           titleKey:'nav.staff',          sub:'Team overview · Shift management',                               subKey:'meta.staffSub'},
+  '/app/attendance':{title:'Attendance',     titleKey:'nav.attendance',     sub:'Check in/out · Working hours · Attendance reports',              subKey:'meta.attendanceSub'},
   '/app/hotel':    {title:'Hotel Module',    titleKey:'nav.hotelModule',    sub:'Rooms · Reservations · Housekeeping',                            subKey:'meta.hotelSub'},
   '/app/analytics':{title:'Analytics',       titleKey:'nav.analytics',      sub:'Revenue trends · Channel split · Top dishes',                    subKey:'meta.analyticsSub'},
   '/app/ledger':   {title:'Ledger',          titleKey:'nav.ledger',         sub:'Full financial reports · Payment methods · Top sellers',         subKey:'meta.ledgerSub'},

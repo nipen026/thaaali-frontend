@@ -6,6 +6,7 @@ import {notifySuccess} from '../lib/toast';
 import {useApiData} from '../lib/useApiData';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import ItemAvatar from '../components/ui/ItemAvatar';
 import {useLanguage} from '../context/LanguageContext';
 
 export default function MenuPage(){
@@ -74,7 +75,7 @@ export default function MenuPage(){
               transition={{delay:i*.03,duration:.3,ease:[.16,1,.3,1]}}
               layout>
               {item.orders_count>500&&<div className="mc-bestseller flex gap-1"><Star size={11}/> {t('menu.bestseller','Bestseller')}</div>}
-              <div className="mc-thumb" aria-hidden="true">{item.image}</div>
+              <div className="mc-thumb"><ItemAvatar id={item.id} name={item.name} size={44}/></div>
               <div className="mc-body">
                 <div className="flex gap-2" style={{marginBottom:4}}>
                   <div className={`vdot ${item.type}`}/>
@@ -82,7 +83,7 @@ export default function MenuPage(){
                 </div>
                 <div className="mc-desc">{item.description}</div>
                 <div className="mc-foot">
-                  <div className="mc-price">₹{item.price}</div>
+                  <div className="mc-price">₹{item.price}{item.pricing_unit==='gram'&&<span style={{fontSize:11,fontWeight:600,color:'var(--muted)'}}>/g</span>}</div>
                   <div className="flex gap-2">
                     <span style={{fontSize:11,color:'var(--muted)'}}>{item.orders_count}×</span>
                     <motion.button

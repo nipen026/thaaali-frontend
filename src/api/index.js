@@ -52,6 +52,7 @@ export const billingAPI = {
   generate: (data) => api.post('/billing/generate', data),
   pay: (id, method) => api.put(`/billing/${id}/pay`, { payment_method: method }),
   getAll: () => api.get('/billing'),
+  getById: (id) => api.get(`/billing/${id}`),
 };
 
 export const inventoryAPI = {
@@ -66,6 +67,16 @@ export const staffAPI = {
   create: (data) => api.post('/staff', data),
   update: (id, data) => api.put(`/staff/${id}`, data),
   updateStatus: (id, status) => api.put(`/staff/${id}/status`, { status }),
+};
+
+export const attendanceAPI = {
+  today: () => api.get('/attendance/today'),
+  checkIn: (staffId) => api.post('/attendance/check-in', staffId ? { staff_id: staffId } : {}),
+  checkOut: (staffId) => api.post('/attendance/check-out', staffId ? { staff_id: staffId } : {}),
+  startBreak: (staffId) => api.post('/attendance/break/start', staffId ? { staff_id: staffId } : {}),
+  endBreak: (staffId) => api.post('/attendance/break/end', staffId ? { staff_id: staffId } : {}),
+  list: (params) => api.get('/attendance', { params }),
+  report: (params) => api.get('/attendance/report', { params }),
 };
 
 export const analyticsAPI = {

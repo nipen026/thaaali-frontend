@@ -19,6 +19,7 @@ export default {
     'staff.role': 'Role', 'staff.shift': 'Shift',
     'staff.shiftOptionMorning': 'Morning', 'staff.shiftOptionEvening': 'Evening', 'staff.shiftOptionNight': 'Night',
     'staff.shiftMorning': 'morning', 'staff.shiftEvening': 'evening', 'staff.shiftNight': 'night', 'staff.shiftSuffix': 'shift',
+    'staff.requiredHoursPerDay': 'Required hours/day', 'staff.requiredHoursShort': '{h}h/day required',
     'staff.editAriaLabel': 'Edit {name}', 'staff.toggleAriaLabel': "Toggle {name}'s shift status",
     'staff.onShiftBadge': 'On shift', 'staff.offShiftBadge': 'Off shift',
     'staff.statusActiveLower': 'active', 'staff.statusInactiveLower': 'inactive',

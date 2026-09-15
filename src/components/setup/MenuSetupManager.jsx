@@ -7,7 +7,7 @@ import Skeleton from '../ui/Skeleton';
 import {useLanguage} from '../../context/LanguageContext';
 
 const NEW_CATEGORY='__new__';
-const EMPTY_ITEM={category:'',newCategoryName:'',name:'',price:'',type:'veg',spice:'mild'};
+const EMPTY_ITEM={category:'',newCategoryName:'',name:'',price:'',pricingUnit:'item',type:'veg',spice:'mild'};
 
 function fileToBase64(file){
   return new Promise((resolve,reject)=>{
@@ -60,7 +60,7 @@ export default function MenuSetupManager(){
       const categoryId=form.category===NEW_CATEGORY
         ? await resolveCategoryId(form.newCategoryName,cache)
         : form.category||await resolveCategoryId('Uncategorized',cache);
-      const r=await menuAPI.create({category:categoryId,name:form.name,price:Number(form.price),type:form.type,spice:form.spice});
+      const r=await menuAPI.create({category:categoryId,name:form.name,price:Number(form.price),pricing_unit:form.pricingUnit,type:form.type,spice:form.spice});
       setMenu(prev=>({...prev,items:[...prev.items,r.data]}));
       setForm(EMPTY_ITEM);
       notifySuccess(t('setup.menuItemAddedToast','{name} added to menu').replace('{name}',r.data.name));
@@ -154,10 +154,23 @@ export default function MenuSetupManager(){
             <label className="flbl" htmlFor="mi-name">{t('setup.menuItemName','Item name')}</label>
             <input id="mi-name" className="finput" value={form.name} onChange={set('name')} required/>
           </div>
+          <div className="fgrp">
+            <label className="flbl">{t('setup.menuPricingType','Pricing')}</label>
+            <div className="filter-bar" style={{margin:0}}>
+              <button type="button" className={`chip${form.pricingUnit==='item'?' on':''}`} onClick={()=>setForm(f=>({...f,pricingUnit:'item'}))}>
+                {t('setup.menuPricingPerItem','Per item')}
+              </button>
+              <button type="button" className={`chip${form.pricingUnit==='gram'?' on':''}`} onClick={()=>setForm(f=>({...f,pricingUnit:'gram'}))}>
+                {t('setup.menuPricingByWeight','By weight (g)')}
+              </button>
+            </div>
+          </div>
           <div className="grid-2 gap-3">
             <div className="fgrp">
-              <label className="flbl" htmlFor="mi-price">{t('setup.menuPrice','Price (₹)')}</label>
-              <input id="mi-price" type="number" min="0" className="finput" value={form.price} onChange={set('price')} required/>
+              <label className="flbl" htmlFor="mi-price">
+                {form.pricingUnit==='gram'?t('setup.menuPricePerGram','Price per gram (₹)'):t('setup.menuPrice','Price (₹)')}
+              </label>
+              <input id="mi-price" type="number" min="0" step="0.01" className="finput" value={form.price} onChange={set('price')} required/>
             </div>
             <div className="fgrp">
               <label className="flbl" htmlFor="mi-type">{t('setup.menuType','Type')}</label>

@@ -1,18 +1,31 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthBrandPanel from '../components/auth/AuthBrandPanel';
+import { PLANS, BILLING_CYCLES } from '../config/pricing';
 
 export default function SignupPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const [form, setForm] = useState({
     businessName: '', businessType: 'both', ownerName: '', email: '', password: '', confirmPassword: '',
   });
   const [busy, setBusy] = useState(false);
+
+  const selectedPlan = useMemo(() => PLANS.find((p) => p.id === params.get('plan')), [params]);
+  const billingCycle = params.get('billing') === BILLING_CYCLES.yearly ? BILLING_CYCLES.yearly : BILLING_CYCLES.monthly;
+
+  // Remembered so onboarding/settings can reference the intended plan later — no
+  // payment gateway wired up yet, so this is purely a UI acknowledgement for now.
+  useEffect(() => {
+    if (selectedPlan) {
+      localStorage.setItem('thaali_selected_plan', JSON.stringify({ plan: selectedPlan.id, billing: billingCycle }));
+    }
+  }, [selectedPlan, billingCycle]);
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -53,6 +66,14 @@ export default function SignupPage() {
           initial={{ opacity: 0, x: 32 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
           <h2>Create your business account</h2>
           <p className="sub">Set up your restaurant or hotel on THAAALI in a minute</p>
+
+          {selectedPlan && (
+            <div className="badge bg-saffron" style={{ marginBottom: 20, padding: '8px 13px', fontSize: 12.5 }}>
+              <Sparkles size={13} />
+              Signing up for the {selectedPlan.name} plan ({billingCycle === BILLING_CYCLES.yearly ? 'Yearly' : 'Monthly'})
+              <Link to="/pricing" style={{ marginLeft: 6, textDecoration: 'underline' }}>Change</Link>
+            </div>
+          )}
 
           <form onSubmit={onSubmit}>
             <div className="fgrp">
