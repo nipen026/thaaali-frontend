@@ -8,6 +8,16 @@ import { useDocumentHead } from '../lib/useDocumentHead';
 import logoLockup from '../assets/brand/logo-lockup.png';
 import { PLANS, COMPARISON, PRICING_FAQS, BILLING_CYCLES, planPriceLabel } from '../config/pricing';
 
+const PRICING_FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: PRICING_FAQS.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+};
+
 const EASE = [0.16, 1, 0.3, 1];
 
 function Reveal({ children, delay = 0, y = 22 }) {
@@ -151,6 +161,8 @@ export default function PricingPage() {
   useDocumentHead({
     title: 'Pricing — THAAALI',
     description: 'Affordable, transparent pricing for Indian cafes, restaurants, and hotels. Plans built for your business — Cafe, Restaurant, Hotel, or both — monthly or yearly, no credit card required to start.',
+    path: '/pricing',
+    jsonLd: PRICING_FAQ_SCHEMA,
   });
 
   return (

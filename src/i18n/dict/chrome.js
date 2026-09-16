@@ -28,6 +28,13 @@ export default {
     'settings.themeLightDesc': 'Always use the light theme', 'settings.themeDarkDesc': 'Always use the dark theme',
     'settings.themeSystemDesc': 'Match your device setting',
     'settings.languageDesc': "Pick the language you'd like THAAALI to use. We've pre-selected the one your device is already set to.",
+    'settings.changePassword': 'Change Password', 'settings.changePasswordDesc': 'Update the password used to sign in to THAAALI.',
+    'settings.currentPassword': 'Current Password', 'settings.newPassword': 'New Password',
+    'settings.confirmNewPassword': 'Confirm New Password', 'settings.updatePassword': 'Update Password',
+    'profile.emailVerified': 'Verified', 'profile.emailUnverified': 'Not verified',
+    'profile.resendVerification': 'Resend verification email',
+    'chrome.verifyBannerText': 'Please verify your email address to secure your account.',
+    'chrome.verifyBannerCta': 'Resend email',
   },
   hi: {
     'chrome.live': 'लाइव', 'chrome.notifications': 'सूचनाएं', 'chrome.toggleNav': 'नेविगेशन मेनू टॉगल करें',

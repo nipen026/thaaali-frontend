@@ -30,7 +30,15 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => { localStorage.removeItem('thaali_token'); setUser(null); };
 
-  return <AuthContext.Provider value={{ user, login, register, logout, loading }}>{children}</AuthContext.Provider>;
+  // Re-pulls /me so local state picks up server-side changes made without a fresh
+  // login — e.g. verifying an email or changing a password from Settings.
+  const refreshUser = async () => {
+    const r = await authAPI.me();
+    setUser(r.data);
+    return r.data;
+  };
+
+  return <AuthContext.Provider value={{ user, login, register, logout, loading, refreshUser }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

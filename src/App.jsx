@@ -8,6 +8,7 @@ import LandingPage from './pages/LandingPage';
 import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import DashboardPage from './pages/DashboardPage';
 import TablesPage from './pages/TablesPage';
 import OrdersPage from './pages/OrdersPage';
@@ -87,6 +88,7 @@ export default function App(){
           <Route path="/pricing" element={<PricingPage/>}/>
           <Route path="/login" element={<LoginPage/>}/>
           <Route path="/signup" element={<SignupPage/>}/>
+          <Route path="/verify-email" element={<VerifyEmailPage/>}/>
           <Route path="/onboarding" element={<Guarded><OnboardingWizardPage/></Guarded>}/>
           <Route path="/print/bill/:id" element={<Guarded><PrintBillPage/></Guarded>}/>
           <Route path="/app" element={<Guarded><Layout/></Guarded>}>

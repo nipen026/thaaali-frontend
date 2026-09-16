@@ -4,5 +4,7 @@ Allow: /login
 Allow: /signup
 Disallow: /app
 Disallow: /onboarding
+Disallow: /print
+Disallow: /verify-email
 
 Sitemap: https://thaali.app/sitemap.xml

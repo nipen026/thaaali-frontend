@@ -9,6 +9,7 @@ import {
 import { useDocumentHead } from '../lib/useDocumentHead';
 import ProductSlider from '../components/landing/ProductSlider';
 import FAQAccordion from '../components/landing/FAQAccordion';
+import { FAQS } from '../config/faqs';
 import { PLANS, BILLING_CYCLES, planPriceLabel } from '../config/pricing';
 import logoLockup from '../assets/brand/logo-lockup.png';
 import thaliHero from '../assets/landing/thali-hero.jpg';
@@ -16,7 +17,7 @@ import thaliFoodTable from '../assets/landing/thali-food-table.jpg';
 import restaurantAmbient from '../assets/landing/restaurant-ambient.jpg';
 import hotelLobby from '../assets/landing/hotel-lobby.jpg';
 
-const STRUCTURED_DATA = {
+const SOFTWARE_APP_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'THAAALI',
@@ -24,6 +25,16 @@ const STRUCTURED_DATA = {
   operatingSystem: 'Web',
   description: 'All-in-one restaurant and hotel management platform covering tables, orders, kitchen display, GST-ready billing, inventory, and hotel operations.',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+};
+
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
 };
 
 const NAV_LINKS = [
@@ -122,12 +133,12 @@ export default function LandingPage() {
   useDocumentHead({
     title: 'THAAALI — Your Whole Business, Served on One Thaaali',
     description: 'All-in-one restaurant and hotel management platform: tables, orders, kitchen display, GST-ready billing, inventory, and hotel operations in one login.',
+    path: '/',
+    jsonLd: [SOFTWARE_APP_SCHEMA, FAQ_SCHEMA],
   });
 
   return (
     <div className="landing">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }} />
-
       <nav className="landing-nav">
         <div className="landing-brand">
           <img src={logoLockup} alt="THAAALI" style={{ height: 32 }} />

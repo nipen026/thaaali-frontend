@@ -6,8 +6,15 @@ import { UserPlus, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import AuthBrandPanel from '../components/auth/AuthBrandPanel';
 import { PLANS, BILLING_CYCLES } from '../config/pricing';
+import { useDocumentHead } from '../lib/useDocumentHead';
 
 export default function SignupPage() {
+  useDocumentHead({
+    title: 'Create Your Account — THAAALI',
+    description: 'Start your 14-day free trial of THAAALI — no credit card required. Set up your restaurant or hotel in minutes.',
+    path: '/signup',
+  });
+
   const { register } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();

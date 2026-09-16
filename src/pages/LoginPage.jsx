@@ -8,6 +8,7 @@ import {
   Building2, LogIn, BedDouble, Mail, Lock, Eye, EyeOff,
 } from 'lucide-react';
 import AuthBrandPanel from '../components/auth/AuthBrandPanel';
+import { useDocumentHead } from '../lib/useDocumentHead';
 
 const DEMOS=[
   {Icon:Crown,role:'Owner',email:'owner@thaali.in',desc:'Full access · All modules',bg:'var(--saffron-50)',fg:'var(--saffron-dark)'},
@@ -20,6 +21,12 @@ const DEMOS=[
 ];
 
 export default function LoginPage(){
+  useDocumentHead({
+    title: 'Sign In — THAAALI',
+    description: 'Sign in to THAAALI to manage your tables, orders, kitchen display, billing, inventory, and hotel operations.',
+    path: '/login',
+  });
+
   const {login}=useAuth();
   const navigate=useNavigate();
   const [email,setEmail]=useState('owner@thaali.in');

@@ -5,13 +5,13 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import { LogOut, Bell, Menu as MenuIcon } from 'lucide-react';
+import { LogOut, Bell, Menu as MenuIcon, MailWarning } from 'lucide-react';
 import NewOrderToast from './NewOrderToast';
 import UserMenu from './UserMenu';
 import NotificationCenter from './NotificationCenter';
 import logoLockupDark from '../../assets/brand/logo-lockup-dark.png';
 import { NAV, PAGE_META, UNIVERSAL_ROUTES, routesForRole, landingFor } from '../../config/nav';
-import { API_URL } from '../../api';
+import { API_URL, authAPI } from '../../api';
 
 const socket = io(API_URL);
 
@@ -24,6 +24,19 @@ export default function Layout(){
   const [time,setTime]=useState(new Date());
   const [sbOpen,setSbOpen]=useState(false);
   const [notifications,setNotifications]=useState([]);
+  const [resendingVerify,setResendingVerify]=useState(false);
+  const [verifySent,setVerifySent]=useState(false);
+
+  const resendVerification=async()=>{
+    setResendingVerify(true);
+    try{
+      await authAPI.resendVerification();
+      setVerifySent(true);
+      toast.success('Verification email sent');
+    }catch(err){
+      toast.error(err.response?.data?.error||'Could not send verification email');
+    }finally{setResendingVerify(false);}
+  };
 
   useEffect(()=>{
     const timerId=setInterval(()=>setTime(new Date()),60000);
@@ -141,6 +154,21 @@ export default function Layout(){
 
       {/* ── MAIN ── */}
       <div className="main-area">
+        {!user.emailVerified && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+            flexWrap: 'wrap', padding: '9px 16px', fontSize: 12.5, fontWeight: 600,
+            background: 'var(--amber-50)', color: '#92400e', borderBottom: '1px solid var(--border)',
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MailWarning size={14} />{t('chrome.verifyBannerText', 'Please verify your email address to secure your account.')}
+            </span>
+            <button type="button" className="btn btn-gh" style={{ padding: '3px 10px', fontSize: 11.5 }}
+              onClick={resendVerification} disabled={resendingVerify || verifySent}>
+              {verifySent ? t('profile.verificationSent', 'Sent') : t('chrome.verifyBannerCta', 'Resend email')}
+            </button>
+          </div>
+        )}
         <motion.header className="topbar"
           initial={{y:-64}} animate={{y:0}}
           transition={{type:'spring',stiffness:300,damping:30,delay:.1}}>
