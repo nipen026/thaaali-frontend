@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Grid3X3, ClipboardList, Monitor,
   UtensilsCrossed, Wallet, Package, Users, TrendingUp,
-  Building2, Store, BookOpen, Clock,
+  Building2, Store, BookOpen, Clock, Bike,
 } from 'lucide-react';
 
 // Single source of truth for both sidebar rendering (Layout.jsx) and route access
@@ -34,6 +34,7 @@ export const NAV = {
       {to:'/app/setup/restaurant',Icon:Store,label:'Restaurant Info',labelKey:'nav.restaurantInfo'},
       {to:'/app/setup/tables',Icon:Grid3X3,label:'Tables & Seating',labelKey:'nav.tablesSeating'},
       {to:'/app/setup/menu',Icon:UtensilsCrossed,label:'Menu Setup',labelKey:'nav.menuSetup'},
+      {to:'/app/setup/integrations',Icon:Bike,label:'Delivery Platforms',labelKey:'nav.deliveryPlatforms'},
     ]},
   ],
   restaurant_manager:[
@@ -52,6 +53,7 @@ export const NAV = {
     {sect:'Setup',sectKey:'nav.sectSetup',links:[
       {to:'/app/setup/tables',Icon:Grid3X3,label:'Tables & Seating',labelKey:'nav.tablesSeating'},
       {to:'/app/setup/menu',Icon:UtensilsCrossed,label:'Menu Setup',labelKey:'nav.menuSetup'},
+      {to:'/app/setup/integrations',Icon:Bike,label:'Delivery Platforms',labelKey:'nav.deliveryPlatforms'},
     ]},
   ],
   hotel_manager:[
@@ -109,6 +111,7 @@ export const PAGE_META = {
   '/app/setup/restaurant':{title:'Restaurant Info', titleKey:'nav.restaurantInfo', sub:'Business details, currency & tax settings',                subKey:'meta.restaurantInfoSub'},
   '/app/setup/tables':    {title:'Tables & Seating', titleKey:'nav.tablesSeating',  sub:'Add or remove tables and configure seating',                subKey:'meta.tablesSetupSub'},
   '/app/setup/menu':      {title:'Menu Setup',       titleKey:'nav.menuSetup',      sub:'Add menu items manually or scan an existing menu',          subKey:'meta.menuSetupSub'},
+  '/app/setup/integrations':{title:'Delivery Platforms',titleKey:'nav.deliveryPlatforms',sub:'Connect Zomato, Swiggy & other delivery platforms',       subKey:'meta.integrationsSub'},
   '/app/profile':         {title:'Profile',          titleKey:'common.profile',     sub:'Your account details',                                       subKey:'meta.profileSub'},
   '/app/settings':        {title:'Settings',         titleKey:'common.settings',    sub:'Appearance and preferences',                                 subKey:'meta.settingsSub'},
 };

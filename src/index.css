@@ -411,6 +411,8 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   position:relative;overflow:hidden;
 }
 .btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn:disabled:active{transform:none}
 .btn-sm{padding:6px 13px;font-size:12.5px}
 .btn-lg{padding:13px 28px;font-size:15px}
 .btn-xl{padding:16px 36px;font-size:17px;font-weight:700}
@@ -763,7 +765,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 .landing-split-overlay{
   position:absolute;inset:0;padding:26px;color:white;
   display:flex;flex-direction:column;justify-content:flex-end;
-  background:linear-gradient(180deg,rgba(15,15,26,0) 32%,rgba(15,15,26,.85) 100%);
+  background:linear-gradient(180deg,rgba(15,15,26,.15) 0%,rgba(15,15,26,.55) 45%,rgba(15,15,26,.94) 100%);
 }
 .landing-split-overlay .sp-ico{
   width:40px;height:40px;border-radius:var(--r-sm);margin-bottom:12px;
@@ -806,11 +808,13 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 .showcase-chrome{
   flex:1;background:var(--white);border:1px solid var(--border);
   border-radius:var(--r-lg);box-shadow:var(--sh-lg);
-  padding:20px 20px 30px;min-height:280px;overflow-x:auto;
+  padding:20px 20px 30px;height:360px;overflow-x:auto;overflow-y:hidden;
+  display:flex;flex-direction:column;
 }
-.showcase-dots-top{display:flex;gap:6px;margin-bottom:18px}
+.showcase-dots-top{display:flex;gap:6px;margin-bottom:18px;flex-shrink:0}
 .showcase-dots-top span{width:9px;height:9px;border-radius:50%;background:var(--border)}
-.showcase-mock{padding:6px 2px}
+.showcase-slide{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+.showcase-mock{padding:6px 2px;width:100%}
 .showcase-arrow{
   flex-shrink:0;width:38px;height:38px;border-radius:50%;
   background:var(--white);border:1px solid var(--border);color:var(--slate);
@@ -884,8 +888,9 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   background:var(--jade-50);color:var(--jade);
 }
 
-.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-items:start;max-width:1180px;margin:0 auto}
-.pricing-teaser-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start;max-width:920px;margin:0 auto}
+.pricing-teaser-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:920px;margin:0 auto}
+.pricing-expanded{max-width:1180px;margin:0 auto}
 
 .pricing-card,.pricing-teaser-card{
   position:relative;background:var(--white);border:1.5px solid var(--border);
@@ -901,6 +906,15 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
   background:var(--saffron);color:white;font-size:11px;font-weight:800;
   box-shadow:0 4px 12px var(--saffron-glow);white-space:nowrap;
 }
+.pricing-card.coming-soon,.pricing-teaser-card.coming-soon{
+  background:var(--surface);opacity:.72;
+}
+.pricing-card.coming-soon:hover,.pricing-teaser-card.coming-soon:hover{
+  transform:none;box-shadow:none;
+}
+.pricing-soon-tag{
+  background:var(--ink);box-shadow:none;
+}
 .pricing-card h3,.pricing-teaser-card h3{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--ink)}
 .pricing-card-tagline{font-size:13px;color:var(--muted);margin-top:6px;min-height:34px;line-height:1.5}
 .pricing-card-price{display:flex;align-items:baseline;gap:5px;margin-top:18px}
@@ -912,7 +926,7 @@ button:focus-visible,a:focus-visible,[tabindex]:focus-visible,input:focus-visibl
 .pricing-card-features li svg{flex-shrink:0;color:var(--jade);margin-top:1px}
 
 .pricing-cmp-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--white)}
-.pricing-cmp{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+.pricing-cmp{width:100%;border-collapse:collapse;font-size:13.5px;min-width:100%}
 .pricing-cmp thead th{
   text-align:center;padding:16px 14px;font-family:var(--font-d);font-weight:800;
   color:var(--ink);border-bottom:1px solid var(--border);background:var(--surface);

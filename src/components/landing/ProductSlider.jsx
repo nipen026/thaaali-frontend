@@ -182,6 +182,7 @@ export default function ProductSlider() {
           </div>
           <AnimatePresence mode="wait" custom={dir}>
             <motion.div
+              className="showcase-slide"
               key={SLIDES[active].key}
               custom={dir}
               initial={{ opacity: 0, x: 24 * dir }}

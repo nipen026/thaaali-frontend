@@ -17,6 +17,25 @@ api.interceptors.request.use(cfg => {
   return cfg;
 });
 
+// A platform admin suspending/cancelling/pausing/holding this tenant (see backend's
+// middleware/accountStatus.js) makes every business-route call 403 with this shape from that
+// point on. Rather than have every page's own try/catch guess what a bare 403 means, one
+// interceptor recognizes it and notifies whoever's listening (App.jsx) to show a full-screen
+// notice instead of the app shell.
+let onAccountRestrictedListener = null;
+export function setAccountRestrictedListener(cb) { onAccountRestrictedListener = cb; }
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const data = err.response?.data;
+    if (err.response?.status === 403 && data?.account_status) {
+      onAccountRestrictedListener?.(data);
+    }
+    return Promise.reject(err);
+  }
+);
+
 export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (data) => api.post('/auth/register', data),
@@ -103,6 +122,22 @@ export const hotelAPI = {
 export const tenantAPI = {
   get: () => api.get('/tenant'),
   update: (data) => api.put('/tenant', data),
+};
+
+// Fire-and-forget product-analytics logging — see backend/routes/events.js. Never awaited by
+// callers and never throws, so a logging hiccup can't block the UI action it's attached to.
+export const eventsAPI = {
+  log: (name, metadata) => { api.post('/events', { name, metadata }).catch(() => {}); },
+};
+
+export const integrationsAPI = {
+  getAll: () => api.get('/integrations'),
+  connect: (platform) => api.post('/integrations', { platform }),
+  setEnabled: (id, enabled) => api.put(`/integrations/${id}`, { enabled }),
+  regenerateSecret: (id) => api.post(`/integrations/${id}/regenerate-secret`),
+  getMappings: (id) => api.get(`/integrations/${id}/mappings`),
+  setMapping: (mappingId, menuItemId) => api.put(`/integrations/mappings/${mappingId}`, { menu_item_id: menuItemId }),
+  simulateOrder: (id) => api.post(`/integrations/${id}/simulate`),
 };
 
 // AI routes wrap their payload as { data, meta } (see backend/routes/ai.js) so the frontend

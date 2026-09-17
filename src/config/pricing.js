@@ -1,19 +1,23 @@
 // Single source of truth for pricing — used by PricingPage (full comparison) and
-// LandingPage (compact teaser). Prices are tax-exclusive, in INR, per tenant/month.
-// Structured by BUSINESS CATEGORY (not a generic tier ladder) — Cafe, Restaurant, Hotel,
-// and Restaurant + Hotel — priced for small/medium Indian F&B and hospitality businesses,
-// benchmarked against typical Indian POS/PMS SaaS pricing (roughly ₹500–2,500/mo per
-// outlet for single-business tools). Yearly price = 10x monthly (2 months free) for every plan.
+// LandingPage (compact teaser + inline expanded view). Prices are tax-exclusive, in INR.
+// Restaurant-tier ladder (Starter/Growth/Pro), with annual pricing ranging ₹3,000–₹8,000/yr
+// — priced affordably for small/medium Indian F&B businesses. Yearly price = 10x monthly
+// (2 months free) for every active plan.
+//
+// The Hotel module is not yet built — it is represented as a single `comingSoon` plan so it
+// still shows up in the pricing grid (clearly marked unavailable) without being purchasable
+// or counted as an active feature of any current plan. Remove `comingSoon` here once the
+// hotel module ships and give it its own monthly/yearly price + highlights at that point.
 
 export const BILLING_CYCLES = { monthly: 'monthly', yearly: 'yearly' };
 
 export const PLANS = [
   {
-    id: 'cafe',
-    name: 'Cafe',
+    id: 'starter',
+    name: 'Starter',
     tagline: 'For cafes, QSRs & coffee shops just getting started',
-    monthlyPrice: 799,
-    yearlyPrice: 7990,
+    monthlyPrice: 300,
+    yearlyPrice: 3000,
     popular: false,
     ctaLabel: 'Start free trial',
     highlights: [
@@ -25,56 +29,60 @@ export const PLANS = [
     ],
   },
   {
-    id: 'restaurant',
-    name: 'Restaurant',
+    id: 'growth',
+    name: 'Growth',
     tagline: 'For full-service restaurants running complete floor-to-bill operations',
-    monthlyPrice: 1499,
-    yearlyPrice: 14990,
+    monthlyPrice: 550,
+    yearlyPrice: 5500,
     popular: true,
     ctaLabel: 'Start free trial',
     highlights: [
-      'Everything in Cafe',
+      'Everything in Starter',
       'Up to 8 team accounts',
       'Staff attendance & check-in/out',
       'Customer capture for WhatsApp marketing',
-      'AI menu scanner & advanced analytics',
+      'Gram / by-weight menu pricing',
     ],
   },
   {
-    id: 'hotel',
-    name: 'Hotel',
-    tagline: 'For guesthouses & small hotels managing rooms and stays',
-    monthlyPrice: 1499,
-    yearlyPrice: 14990,
+    id: 'pro',
+    name: 'Pro',
+    tagline: 'For high-volume restaurants that need every module unlocked',
+    monthlyPrice: 800,
+    yearlyPrice: 8000,
     popular: false,
     ctaLabel: 'Start free trial',
     highlights: [
-      'Up to 8 team accounts',
-      'Rooms, reservations & check-in/out',
-      'Housekeeping status tracking',
-      'Staff attendance & check-in/out',
-      'Real-time analytics & reports',
-    ],
-  },
-  {
-    id: 'both',
-    name: 'Restaurant + Hotel',
-    tagline: 'For combined properties running both under one roof',
-    monthlyPrice: 2199,
-    yearlyPrice: 21990,
-    popular: false,
-    ctaLabel: 'Start free trial',
-    highlights: [
-      'Everything in Restaurant + Hotel',
+      'Everything in Growth',
       'Up to 20 team accounts',
-      'Restaurant + Hotel on one login',
-      'All modules unlocked',
+      'AI menu scanner & advanced analytics',
+      'Ledger & accounting exports',
       'Priority phone & chat support',
     ],
   },
+  // {
+  //   id: 'hotel',
+  //   name: 'Hotel',
+  //   tagline: 'Rooms, reservations & housekeeping for guesthouses and small hotels',
+  //   comingSoon: true,
+  //   ctaLabel: 'Coming soon',
+  //   highlights: [
+  //     'Rooms, reservations & check-in/out',
+  //     'Housekeeping status tracking',
+  //     'Combined restaurant + hotel login',
+  //     'Real-time analytics & reports',
+  //   ],
+  // },
 ];
 
+// Only plans that are actually on sale today — used wherever "active feature" language
+// or purchase flows (signup plan picker, comparison table columns) must exclude Hotel.
+export const ACTIVE_PLANS = PLANS.filter((plan) => !plan.comingSoon);
+
 export function planPriceLabel(plan, cycle) {
+  if (plan.comingSoon) {
+    return { amount: '', period: '', note: 'Hotel module is in development' };
+  }
   if (cycle === BILLING_CYCLES.yearly) {
     const equivMonthly = Math.round(plan.yearlyPrice / 12);
     return { amount: `₹${equivMonthly.toLocaleString('en-IN')}`, period: '/mo', note: `₹${plan.yearlyPrice.toLocaleString('en-IN')} billed yearly · 2 months free` };
@@ -84,49 +92,49 @@ export function planPriceLabel(plan, cycle) {
 
 // Rows are traced to real modules/schema fields (see backend/prisma/schema.prisma and
 // backend/routes/*) so the comparison table never promises a feature that doesn't exist.
-// Keyed by plan id (cafe/restaurant/hotel/both) — ComparisonTable in PricingPage.jsx reads
-// these dynamically off the PLANS array, so a row only needs a value for the ids it applies to.
+// Keyed by plan id (starter/growth/pro) — ComparisonTable in PricingPage.jsx reads these
+// dynamically off ACTIVE_PLANS, so a row only needs a value for the ids it applies to.
+// Hotel is deliberately left out of this table — it has no shipped features to compare yet.
 export const COMPARISON = [
   {
     category: 'Core operations',
     rows: [
-      { label: 'Team member accounts', cafe: 'Up to 3', restaurant: 'Up to 8', hotel: 'Up to 8', both: 'Up to 20' },
-      { label: 'Table & floor management', cafe: true, restaurant: true, hotel: false, both: true },
-      { label: 'Rooms, reservations & check-in/out', cafe: false, restaurant: false, hotel: true, both: true },
-      { label: 'Multi-channel orders (dine-in, takeaway, delivery)', cafe: true, restaurant: true, hotel: false, both: true },
-      { label: 'Kitchen Display System (KDS)', cafe: true, restaurant: true, hotel: false, both: true },
-      { label: 'GST-ready billing & split payments', cafe: true, restaurant: true, hotel: true, both: true },
-      { label: 'Print bill & WhatsApp bill sharing', cafe: true, restaurant: true, hotel: true, both: true },
+      { label: 'Team member accounts', starter: 'Up to 3', growth: 'Up to 8', pro: 'Up to 20' },
+      { label: 'Table & floor management', starter: true, growth: true, pro: true },
+      { label: 'Multi-channel orders (dine-in, takeaway, delivery)', starter: true, growth: true, pro: true },
+      { label: 'Kitchen Display System (KDS)', starter: true, growth: true, pro: true },
+      { label: 'GST-ready billing & split payments', starter: true, growth: true, pro: true },
+      { label: 'Print bill & WhatsApp bill sharing', starter: true, growth: true, pro: true },
     ],
   },
   {
     category: 'Inventory & menu',
     rows: [
-      { label: 'Inventory stock tracking', cafe: 'Basic', restaurant: 'Advanced + reorder alerts', hotel: '—', both: 'Advanced + reorder alerts' },
-      { label: 'Gram / by-weight menu pricing', cafe: false, restaurant: true, hotel: false, both: true },
-      { label: 'AI menu scanner (photo → menu items)', cafe: false, restaurant: true, hotel: false, both: true },
+      { label: 'Inventory stock tracking', starter: 'Basic', growth: 'Advanced + reorder alerts', pro: 'Advanced + reorder alerts' },
+      { label: 'Gram / by-weight menu pricing', starter: false, growth: true, pro: true },
+      { label: 'AI menu scanner (photo → menu items)', starter: false, growth: false, pro: true },
     ],
   },
   {
     category: 'Staff & customers',
     rows: [
-      { label: 'Role-based staff access', cafe: true, restaurant: true, hotel: true, both: true },
-      { label: 'Staff attendance & check-in/out reports', cafe: false, restaurant: true, hotel: true, both: true },
-      { label: 'Customer capture for WhatsApp marketing', cafe: false, restaurant: true, hotel: false, both: true },
+      { label: 'Role-based staff access', starter: true, growth: true, pro: true },
+      { label: 'Staff attendance & check-in/out reports', starter: false, growth: true, pro: true },
+      { label: 'Customer capture for WhatsApp marketing', starter: false, growth: true, pro: true },
     ],
   },
   {
     category: 'Reporting',
     rows: [
-      { label: 'Analytics dashboard', cafe: 'Standard', restaurant: 'Real-time, advanced', hotel: 'Real-time, advanced', both: 'Real-time, advanced' },
-      { label: 'Ledger & accounting exports', cafe: false, restaurant: true, hotel: true, both: true },
+      { label: 'Analytics dashboard', starter: 'Standard', growth: 'Real-time, advanced', pro: 'Real-time, advanced' },
+      { label: 'Ledger & accounting exports', starter: false, growth: false, pro: true },
     ],
   },
   {
     category: 'Support',
     rows: [
-      { label: 'Support channel', cafe: 'Email (48h)', restaurant: 'Priority chat + email (12h)', hotel: 'Priority chat + email (12h)', both: 'Priority phone + chat' },
-      { label: 'Onboarding', cafe: 'Self-serve setup wizard', restaurant: 'Self-serve + guided setup', hotel: 'Self-serve + guided setup', both: 'Guided onboarding' },
+      { label: 'Support channel', starter: 'Email (48h)', growth: 'Priority chat + email (12h)', pro: 'Priority phone + chat' },
+      { label: 'Onboarding', starter: 'Self-serve setup wizard', growth: 'Self-serve + guided setup', pro: 'Guided onboarding' },
     ],
   },
 ];
@@ -134,19 +142,19 @@ export const COMPARISON = [
 export const PRICING_FAQS = [
   {
     q: 'Do I need a credit card to start the free trial?',
-    a: 'No. Every plan starts with a 14-day free trial — create your account and set up your menu, tables, or rooms first, without entering payment details.',
+    a: 'No. Every plan starts with a 14-day free trial — create your account and set up your menu and tables first, without entering payment details.',
   },
   {
-    q: "What's the difference between the Cafe and Restaurant plans?",
-    a: 'Cafe covers the essentials for a small counter-service or quick-bite setup. Restaurant adds staff attendance tracking, customer capture for WhatsApp marketing, gram-based weighed-item pricing, the AI menu scanner, and advanced analytics — built for full-service dine-in operations.',
+    q: "What's the difference between Starter, Growth, and Pro?",
+    a: 'Starter covers the essentials for a small counter-service or quick-bite setup. Growth adds staff attendance tracking, customer capture for WhatsApp marketing, and gram-based weighed-item pricing for full-service dine-in operations. Pro unlocks the AI menu scanner, advanced analytics, accounting exports, and priority support for high-volume restaurants.',
   },
   {
-    q: 'I run a restaurant and a small hotel on the same property — which plan do I need?',
-    a: 'Restaurant + Hotel gives you both modules on one login at a bundled price — cheaper than paying for the Restaurant and Hotel plans separately, with a higher team-account limit to match.',
+    q: 'Is the Hotel module available yet?',
+    a: "Not yet — Hotel management (rooms, reservations, check-in/out, housekeeping) is under active development and marked Coming Soon. It isn't included in any current plan. Join the waitlist from the pricing page and we'll notify you the moment it's ready.",
   },
   {
     q: 'Can I switch plans later?',
-    a: 'Yes. You can move between Cafe, Restaurant, Hotel, and Restaurant + Hotel as your business grows — your tables, menu, orders, and history carry over with no re-setup.',
+    a: 'Yes. You can move between Starter, Growth, and Pro as your business grows — your tables, menu, orders, and history carry over with no re-setup.',
   },
   {
     q: 'Is GST included in the listed price?',
@@ -154,6 +162,6 @@ export const PRICING_FAQS = [
   },
   {
     q: 'I run a multi-location chain — is there a plan for that?',
-    a: "These four plans are built for single-location small and medium businesses. If you're running multiple outlets or a larger group, contact sales for a custom quote.",
+    a: "These plans are built for single-location small and medium businesses. If you're running multiple outlets or a larger group, contact sales for a custom quote.",
   },
 ];

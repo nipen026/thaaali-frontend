@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { setAccountRestrictedListener } from './api';
+import AccountRestrictedScreen from './components/AccountRestrictedScreen';
 import Layout from './components/layout/Layout';
 import LandingPage from './pages/LandingPage';
 import PricingPage from './pages/PricingPage';
@@ -25,6 +28,7 @@ import OnboardingWizardPage from './pages/OnboardingWizardPage';
 import RestaurantSetupPage from './pages/setup/RestaurantSetupPage';
 import TableSetupPage from './pages/setup/TableSetupPage';
 import MenuSetupPage from './pages/setup/MenuSetupPage';
+import IntegrationsSetupPage from './pages/setup/IntegrationsSetupPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import PrintBillPage from './pages/PrintBillPage';
@@ -69,11 +73,25 @@ function AppIndexRedirect(){
   return <Navigate to={landingFor(user.role)} replace/>;
 }
 
+// Any API response shaped like a suspended/cancelled/paused/on-hold account (see
+// backend's middleware/accountStatus.js) sets this via the axios interceptor in api/index.js —
+// rendered above the whole route tree so it applies no matter which page triggered it.
+function RestrictionGate({children}){
+  const [restriction,setRestriction]=useState(null);
+  useEffect(()=>{
+    setAccountRestrictedListener((data)=>setRestriction(data));
+    return ()=>setAccountRestrictedListener(null);
+  },[]);
+  if(restriction) return <AccountRestrictedScreen status={restriction.account_status} message={restriction.error} onDismiss={()=>setRestriction(null)}/>;
+  return children;
+}
+
 export default function App(){
   return(
     <ThemeProvider>
     <LanguageProvider>
       <AuthProvider>
+        <RestrictionGate>
         <BrowserRouter>
         <Toaster
           position="top-right"
@@ -108,12 +126,14 @@ export default function App(){
             <Route path="setup/restaurant" element={<RestaurantSetupPage/>}/>
             <Route path="setup/tables"     element={<TableSetupPage/>}/>
             <Route path="setup/menu"       element={<MenuSetupPage/>}/>
+            <Route path="setup/integrations" element={<IntegrationsSetupPage/>}/>
             <Route path="profile"   element={<ProfilePage/>}/>
             <Route path="settings"  element={<SettingsPage/>}/>
           </Route>
           <Route path="*" element={<Navigate to="/" replace/>}/>
         </Routes>
         </BrowserRouter>
+        </RestrictionGate>
       </AuthProvider>
     </LanguageProvider>
     </ThemeProvider>

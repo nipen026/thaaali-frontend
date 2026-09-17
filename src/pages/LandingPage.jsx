@@ -5,12 +5,14 @@ import {
   Grid3X3, ClipboardList, Monitor, Wallet, Package, TrendingUp, Building2, Users,
   Crown, Briefcase, Utensils, CreditCard, ChefHat, ArrowRight, Menu, X,
   ShieldCheck, Zap, Layers, UserPlus, Settings2, Rocket, Sparkles, CheckCircle2, Check,
+  ChevronUp, Clock,
 } from 'lucide-react';
 import { useDocumentHead } from '../lib/useDocumentHead';
 import ProductSlider from '../components/landing/ProductSlider';
 import FAQAccordion from '../components/landing/FAQAccordion';
 import { FAQS } from '../config/faqs';
 import { PLANS, BILLING_CYCLES, planPriceLabel } from '../config/pricing';
+import { BillingToggle, PricingCards, PricingComparisonTable } from '../components/landing/PricingBlock';
 import logoLockup from '../assets/brand/logo-lockup.png';
 import thaliHero from '../assets/landing/thali-hero.jpg';
 import thaliFoodTable from '../assets/landing/thali-food-table.jpg';
@@ -129,6 +131,8 @@ function CountUp({ to, suffix = '', duration = 1.3 }) {
 
 export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAllPricing, setShowAllPricing] = useState(false);
+  const [pricingCycle, setPricingCycle] = useState(BILLING_CYCLES.monthly);
 
   useDocumentHead({
     title: 'THAAALI — Your Whole Business, Served on One Thaaali',
@@ -327,39 +331,77 @@ export default function LandingPage() {
       <section className="landing-section" id="pricing" style={{ paddingTop: 0 }}>
         <Reveal>
           <div className="landing-section-hd">
-            <span className="landing-kicker">Simple, Transparent Pricing</span>
+            <span className="landing-kicker" style={{ marginTop: 48 }}>Simple, Transparent Pricing</span>
             <h2>A plan built for your kind of business</h2>
             <p>Affordable pricing for Indian cafes, restaurants, and hotels. No hidden fees, no per-transaction cuts. 14-day free trial, no card required.</p>
           </div>
         </Reveal>
-        <div className="pricing-teaser-grid">
-          {PLANS.map(({ id, name, tagline, popular, highlights }, i) => {
-            const price = planPriceLabel(PLANS[i], BILLING_CYCLES.monthly);
-            return (
-              <Reveal delay={i * 0.06} key={id}>
-                <div className={`pricing-teaser-card ${popular ? 'popular' : ''}`}>
-                  {popular && <div className="pricing-popular-tag"><Crown size={12} /> Most Popular</div>}
-                  <h3>{name}</h3>
-                  <p className="pricing-card-tagline">{tagline}</p>
-                  <div className="pricing-card-price">
-                    <span className="amt">{price.amount}</span>
-                    <span className="per">{price.period}</span>
-                  </div>
-                  <ul className="pricing-card-features">
-                    {highlights.slice(0, 3).map((h) => <li key={h}><Check size={15} /> {h}</li>)}
-                  </ul>
-                </div>
-              </Reveal>
-            );
-          })}
-        </div>
-        <Reveal delay={0.15}>
-          <div style={{ textAlign: 'center', marginTop: 30 }}>
-            <Link to="/pricing" className="btn btn-sc btn-lg">
-              See full plan comparison &amp; yearly pricing <ArrowRight size={15} />
-            </Link>
+        {!showAllPricing && (
+          <>
+            <div className="pricing-teaser-grid">
+              {PLANS.map(({ id, name, tagline, popular, comingSoon, highlights }, i) => {
+                const price = planPriceLabel(PLANS[i], BILLING_CYCLES.monthly);
+                return (
+                  <Reveal delay={i * 0.06} key={id}>
+                    <div className={`pricing-teaser-card ${popular ? 'popular' : ''} ${comingSoon ? 'coming-soon' : ''}`}>
+                      {popular && <div className="pricing-popular-tag"><Crown size={12} /> Most Popular</div>}
+                      {comingSoon && <div className="pricing-popular-tag pricing-soon-tag"><Clock size={12} /> Coming Soon</div>}
+                      <h3>{name}</h3>
+                      <p className="pricing-card-tagline">{tagline}</p>
+                      <div className="pricing-card-price">
+                        <span className="amt">{price.amount}</span>
+                        <span className="per">{price.period}</span>
+                      </div>
+                      <ul className="pricing-card-features">
+                        {highlights.slice(0, 3).map((h) => <li key={h}><Check size={15} /> {h}</li>)}
+                      </ul>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+            <Reveal delay={0.15}>
+              <div style={{ textAlign: 'center', marginTop: 30 }}>
+                <button type="button" className="btn btn-sc btn-lg" onClick={() => setShowAllPricing(true)}>
+                  See All Pricing <ArrowRight size={15} />
+                </button>
+              </div>
+            </Reveal>
+          </>
+        )}
+
+        {showAllPricing && (
+          <div className="pricing-expanded">
+            <Reveal>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <BillingToggle cycle={pricingCycle} onChange={setPricingCycle} />
+              </div>
+            </Reveal>
+
+            <div style={{ marginTop: 34 }}>
+              <PricingCards cycle={pricingCycle} />
+            </div>
+
+            <Reveal delay={0.1}>
+              <div className="landing-section-hd" style={{ marginTop: 56 }}>
+                <span className="landing-kicker">Compare Plans</span>
+                <h2>Every detail, laid out plainly</h2>
+                <p>Exactly what's included at each tier — no fine print.</p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <PricingComparisonTable />
+            </Reveal>
+
+            <Reveal delay={0.2}>
+              <div style={{ textAlign: 'center', marginTop: 30 }}>
+                <button type="button" className="btn btn-gh btn-lg" onClick={() => setShowAllPricing(false)}>
+                  Show less <ChevronUp size={15} />
+                </button>
+              </div>
+            </Reveal>
           </div>
-        </Reveal>
+        )}
       </section>
 
       <section className="landing-section" style={{ paddingTop: 0 }}>

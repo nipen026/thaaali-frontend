@@ -19,7 +19,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [form, setForm] = useState({
-    businessName: '', businessType: 'both', ownerName: '', email: '', password: '', confirmPassword: '',
+    businessName: '', businessType: 'restaurant', ownerName: '', email: '', password: '', confirmPassword: '',
   });
   const [busy, setBusy] = useState(false);
 
@@ -93,8 +93,8 @@ export default function SignupPage() {
               <label className="flbl" htmlFor="su-type">Business type</label>
               <select id="su-type" className="finput" value={form.businessType} onChange={set('businessType')}>
                 <option value="restaurant">Restaurant</option>
-                <option value="hotel">Hotel</option>
-                <option value="both">Restaurant &amp; Hotel</option>
+                <option value="hotel" disabled>Hotel (Coming Soon)</option>
+                <option value="both" disabled>Restaurant &amp; Hotel (Coming Soon)</option>
               </select>
             </div>
 

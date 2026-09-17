@@ -1,10 +1,11 @@
-import {useState} from 'react';
+import {useState,useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {motion,AnimatePresence} from 'framer-motion';
 import {Building2,Grid3X3,UtensilsCrossed,CheckCircle2,ArrowRight,ArrowLeft} from 'lucide-react';
 import RestaurantInfoForm from '../components/setup/RestaurantInfoForm';
 import TableSetupManager from '../components/setup/TableSetupManager';
 import MenuSetupManager from '../components/setup/MenuSetupManager';
+import {eventsAPI} from '../api';
 import logoIcon from '../assets/brand/logo-icon.png';
 
 const STEPS=[
@@ -18,9 +19,14 @@ export default function OnboardingWizardPage(){
   const navigate=useNavigate();
   const [step,setStep]=useState(0);
 
+  // Powers the Admin Panel's onboarding funnel (how many tenants reach each step, where
+  // they drop off) — see backend/routes/platform.js's /activity/onboarding-funnel.
+  useEffect(()=>{ eventsAPI.log('onboarding_step_viewed',{step:STEPS[step].key}); },[step]);
+
   const next=()=>setStep(s=>Math.min(s+1,STEPS.length-1));
   const back=()=>setStep(s=>Math.max(s-1,0));
-  const finish=()=>navigate('/app/dashboard');
+  const finish=()=>{ eventsAPI.log('onboarding_completed'); navigate('/app/dashboard'); };
+  const skip=()=>{ eventsAPI.log('onboarding_skipped',{atStep:STEPS[step].key}); navigate('/app/dashboard'); };
 
   return(
     <div style={{minHeight:'100vh',background:'var(--surface)'}}>
@@ -70,7 +76,7 @@ export default function OnboardingWizardPage(){
                   <ArrowLeft size={15}/> Back
                 </button>
                 <div className="flex gap-3">
-                  <button className="btn btn-gh" onClick={()=>navigate('/app/dashboard')}>Skip for now</button>
+                  <button className="btn btn-gh" onClick={skip}>Skip for now</button>
                   {STEPS[step].key!=='info'&&(
                     <button className="btn btn-pr" onClick={next}>Next <ArrowRight size={15}/></button>
                   )}
